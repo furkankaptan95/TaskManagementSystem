@@ -1,5 +1,5 @@
 ﻿namespace UserService.Entities;
-public class User
+public class UserEntity
 {
     public int Id { get; set; }
     public string Username { get; set; }
