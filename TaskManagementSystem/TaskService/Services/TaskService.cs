@@ -1,6 +1,7 @@
 ﻿using MongoDB.Driver;
 using MongoDB.Bson;
 using TaskAPI.Entities;
+using TaskAPI.DTOs;
 
 namespace TaskAPI.Services;
 
@@ -33,16 +34,27 @@ public class TaskService
     }
 
     // Yeni görev oluştur
-    public async Task CreateTaskAsync(TaskEntity task)
+    public async Task AddTaskAsync(AddTaskDto dto)
     {
-        // Kullanıcıyı kontrol et
-        var user = await _mongoDbService.Users.Find(u => u.Id == new ObjectId(task.UserId)).FirstOrDefaultAsync();
-        if (user == null)
+        if(!string.IsNullOrEmpty(dto.UserId))
         {
-            throw new Exception("User not found");  // Kullanıcı bulunamazsa hata fırlat
+            var user = await _mongoDbService.Users.Find(u => u.Id == new ObjectId(dto.UserId)).FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                throw new Exception("User not found");  // Kullanıcı bulunamazsa hata fırlat
+            }
         }
 
-        await _mongoDbService.CreateTaskAsync(task);  // MongoDbService üzerinden yeni görev oluştur
+        var entity = new TaskEntity
+        {
+            Description = dto.Description,
+            Title = dto.Title,
+            EndDate = dto.EndDate,
+            UserId = dto.UserId,
+        };
+
+        await _mongoDbService.CreateTaskAsync(entity);
     }
 
     // Var olan görevi güncelle

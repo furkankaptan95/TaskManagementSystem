@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TaskAPI.DTOs;
+using TaskAPI.Services;
 
 namespace TaskAPI.Controllers;
 
@@ -7,6 +9,13 @@ namespace TaskAPI.Controllers;
 [ApiController]
 public class TaskController : ControllerBase
 {
+    private readonly TaskService _taskService;
+
+    public TaskController(TaskService taskService)
+    {
+        _taskService = taskService;
+    }
+
     [HttpGet("tasks")]
     public async Task<IActionResult> GetAll()
     {
@@ -20,8 +29,10 @@ public class TaskController : ControllerBase
     }
 
     [HttpPost("add")]
-    public async Task<IActionResult> Add([FromBody] object AddTaskDto)
+    public async Task<IActionResult> Add([FromBody] AddTaskDto addDto)
     {
+        await _taskService.AddTaskAsync(addDto);
+
         return Ok();
     }
 

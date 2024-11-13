@@ -11,16 +11,17 @@ namespace TaskAPI.Entities
 
         public string Title { get; set; }
         public string Description { get; set; }
-        public bool IsCompleted { get; set; }
+        public bool IsCompleted { get; set; } = false;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime EndDate { get; set; }
 
         // MongoDB'deki UserId ObjectId türünde olacak
         [BsonRepresentation(BsonType.ObjectId)]  // ObjectId türüne dönüştürme
-        public string UserId { get; set; }  // UserId'yi ObjectId türünde tutuyoruz
+        public string? UserId { get; set; }  // UserId'yi ObjectId türünde tutuyoruz
 
         // İlişkili kullanıcıyı belirtmek, ancak bu veritabanına kaydedilmeyecek
         [BsonIgnore]  // MongoDB veritabanına kaydedilmez
-        public UserEntity User { get; set; }  // Kullanıcı nesnesi burada yer almaz
+        public UserEntity? User { get; set; }  // Kullanıcı nesnesi burada yer almaz
 
     }
 }
