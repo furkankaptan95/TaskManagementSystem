@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
 using TaskAPI.DTOs;
 using TaskAPI.Services;
 
@@ -26,6 +27,11 @@ public class TaskController : ControllerBase
     [HttpGet("task/{taskId}")]
     public async Task<IActionResult> GetDetails([FromRoute] string taskId)
     {
+        if (!ObjectId.TryParse(taskId, out _))
+        {
+            return BadRequest("Invalid task ID format.");
+        }
+
         var dto = await _taskService.GetTaskByIdAsync(taskId);
 
         return Ok(dto);
