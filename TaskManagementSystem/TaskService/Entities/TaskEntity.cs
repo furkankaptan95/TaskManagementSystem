@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using System;
 
 namespace TaskAPI.Entities
 {
@@ -8,7 +7,6 @@ namespace TaskAPI.Entities
     {
         [BsonId]  // MongoDB'nin otomatik oluşturduğu _id alanını işaret ederiz
         public ObjectId Id { get; set; }  // MongoDB'deki ObjectId türünde olacak
-
         public string Title { get; set; }
         public string Description { get; set; }
         public bool IsCompleted { get; set; } = false;
@@ -19,7 +17,6 @@ namespace TaskAPI.Entities
         [BsonRepresentation(BsonType.ObjectId)]  // ObjectId türüne dönüştürme
         public string? UserId { get; set; }  // UserId'yi ObjectId türünde tutuyoruz
 
-        // İlişkili kullanıcıyı belirtmek, ancak bu veritabanına kaydedilmeyecek
         [BsonIgnore]  // MongoDB veritabanına kaydedilmez
         public UserEntity? User { get; set; }  // Kullanıcı nesnesi burada yer almaz
 

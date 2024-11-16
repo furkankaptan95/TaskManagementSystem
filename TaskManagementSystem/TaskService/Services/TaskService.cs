@@ -15,9 +15,24 @@ public class TaskService
     }
 
     // Tüm görevleri getir
-    public async Task<List<TaskEntity>> GetAllTasksAsync()
+    public async Task<List<AllTasksDto>> GetAllTasksAsync()
     {
-        return await _mongoDbService.GetAllTasksAsync();  // MongoDbService üzerinden tüm görevleri getir
+        var entities = await _mongoDbService.GetAllTasksAsync();
+
+        var dtos = entities
+        .Select(item => new AllTasksDto
+        {
+            Id = item.Id.ToString(),
+            Description = item.Description,
+            Title = item.Title,
+            IsCompleted = item.IsCompleted,
+            CreatedAt = item.CreatedAt,
+            EndDate = item.EndDate,
+            UserId = item.UserId,
+        })
+        .ToList();
+
+        return dtos;
     }
 
     // Görev ID'ye göre getir

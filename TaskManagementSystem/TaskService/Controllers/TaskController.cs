@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TaskAPI.DTOs;
 using TaskAPI.Services;
 
@@ -19,7 +18,9 @@ public class TaskController : ControllerBase
     [HttpGet("tasks")]
     public async Task<IActionResult> GetAll()
     {
-        return Ok();
+        var taskDtos = await _taskService.GetAllTasksAsync();
+
+        return Ok(taskDtos);
     }
 
     [HttpGet("task/{taskId}")]
