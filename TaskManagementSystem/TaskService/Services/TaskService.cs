@@ -36,16 +36,28 @@ public class TaskService
     }
 
     // Görev ID'ye göre getir
-    public async Task<TaskEntity> GetTaskByIdAsync(string id)  // ID'yi string (ObjectId) türüyle alıyoruz
+    public async Task<SingleTaskDto> GetTaskByIdAsync(string id)  // ID'yi string (ObjectId) türüyle alıyoruz
     {
         var task = await _mongoDbService.GetTaskByIdAsync(id);  // MongoDbService üzerinden görev bilgilerini al
 
-        if (task == null)
+        if(task is null)
         {
-            throw new Exception("Task not found");  // Görev bulunamazsa hata fırlat
+            return null;
         }
 
-        return task;
+        var dto = new SingleTaskDto
+        {
+            Description = task.Description,
+            Title = task.Title,
+            IsCompleted = task.IsCompleted,
+            CreatedAt = task.CreatedAt,
+            EndDate = task.EndDate,
+            UserId = task.UserId,
+            TaskUserName = task.User?.Username,
+            Id = id
+        };
+
+        return dto;
     }
 
     // Yeni görev oluştur

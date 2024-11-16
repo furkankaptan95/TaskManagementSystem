@@ -26,7 +26,9 @@ public class TaskController : ControllerBase
     [HttpGet("task/{taskId}")]
     public async Task<IActionResult> GetDetails([FromRoute] string taskId)
     {
-        return Ok();
+        var dto = await _taskService.GetTaskByIdAsync(taskId);
+
+        return Ok(dto);
     }
 
     [HttpPost("add")]

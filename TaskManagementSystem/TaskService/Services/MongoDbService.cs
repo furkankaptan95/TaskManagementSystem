@@ -73,12 +73,15 @@ namespace TaskAPI.Services
             if (task != null)
             {
                 // Görev ile ilişkili kullanıcıyı bul
-                var user = await _usersCollection.Find(u => u.Id == new ObjectId(task.UserId)).FirstOrDefaultAsync();
-
-                // Kullanıcı bilgilerini göreve ekle
-                if (user != null)
+                if(task.UserId != null)
                 {
-                    task.User = user;  // User bilgilerini ilişkilendir
+                    var user = await _usersCollection.Find(u => u.Id == new ObjectId(task.UserId)).FirstOrDefaultAsync();
+
+                    // Kullanıcı bilgilerini göreve ekle
+                    if (user != null)
+                    {
+                        task.User = user;  // User bilgilerini ilişkilendir
+                    }
                 }
             }
 
