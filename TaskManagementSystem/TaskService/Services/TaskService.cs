@@ -110,6 +110,23 @@ public class TaskService
         return new ServiceResult(true, "Task updated successfuly.");
     }
 
+    public async Task<ServiceResult> ChangeStatusAsync(string id)  // ID'yi string (ObjectId) olarak alıyoruz
+    {
+        var existingTask = await _mongoDbService.GetTaskByIdAsync(id);  // Mevcut görevi al
+
+        if (existingTask == null)
+        {
+            return new ServiceResult(false, "Task to update is not exist.");
+        }
+
+        existingTask.IsCompleted = !existingTask.IsCompleted;
+
+        await _mongoDbService.UpdateTaskAsync(id, existingTask);  // MongoDbService üzerinden görevi güncelle
+
+        return new ServiceResult(true, "Task updated successfuly.");
+    }
+
+
     // Görev sil
     public async Task DeleteTaskAsync(string id)  // ID'yi string (ObjectId) olarak alıyoruz
     {

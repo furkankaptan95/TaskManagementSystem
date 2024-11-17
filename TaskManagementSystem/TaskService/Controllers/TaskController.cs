@@ -80,7 +80,19 @@ public class TaskController : ControllerBase
     [HttpPut("status/{taskId}")]
     public async Task<IActionResult> ChangeStatus([FromRoute] string taskId)
     {
-        return Ok();
+        if (!ObjectId.TryParse(taskId, out _))
+        {
+            return BadRequest("Invalid ID format.");
+        }
+
+        var result = await _taskService.ChangeStatusAsync(taskId);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Message);
+        }
+
+        return Ok(result.Message);
     }
 
     [HttpPost("add-question")]
