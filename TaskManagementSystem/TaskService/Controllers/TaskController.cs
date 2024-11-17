@@ -29,7 +29,7 @@ public class TaskController : ControllerBase
     {
         if (!ObjectId.TryParse(taskId, out _))
         {
-            return BadRequest("Invalid task ID format.");
+            return BadRequest("Invalid ID format.");
         }
 
         var dto = await _taskService.GetTaskByIdAsync(taskId);
@@ -54,6 +54,13 @@ public class TaskController : ControllerBase
     [HttpDelete("delete/{taskId}")]
     public async Task<IActionResult> Delete([FromRoute] string taskId)
     {
+        if (!ObjectId.TryParse(taskId, out _))
+        {
+            return BadRequest("Invalid ID format.");
+        }
+
+        await _taskService.DeleteTaskAsync(taskId);
+
         return Ok();
     }
 

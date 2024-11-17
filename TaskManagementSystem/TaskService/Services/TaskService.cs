@@ -101,9 +101,10 @@ public class TaskService
     public async Task DeleteTaskAsync(string id)  // ID'yi string (ObjectId) olarak alıyoruz
     {
         var existingTask = await _mongoDbService.GetTaskByIdAsync(id);  // Mevcut görevi al
+
         if (existingTask == null)
         {
-            throw new Exception("Task not found");  // Görev bulunamazsa hata fırlat
+            return;
         }
 
         await _mongoDbService.DeleteTaskAsync(id);  // MongoDbService üzerinden görevi sil
