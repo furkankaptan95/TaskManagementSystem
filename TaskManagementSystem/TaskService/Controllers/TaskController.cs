@@ -46,9 +46,16 @@ public class TaskController : ControllerBase
     }
 
     [HttpPut("update")]
-    public async Task<IActionResult> Update([FromBody] object UpdateTaskDto)
+    public async Task<IActionResult> Update([FromBody] UpdateTaskDto updateTaskDto)
     {
-        return Ok();
+        var result = await _taskService.UpdateTaskAsync(updateTaskDto);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Message);
+        }
+
+        return Ok(result.Message);
     }
 
     [HttpDelete("delete/{taskId}")]

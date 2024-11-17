@@ -2,6 +2,7 @@
 using MongoDB.Bson;
 using TaskAPI.Entities;
 using TaskAPI.DTOs;
+using System.Threading.Tasks;
 
 namespace TaskAPI.Services;
 
@@ -85,16 +86,28 @@ public class TaskService
     }
 
     // Var olan görevi güncelle
-    public async Task UpdateTaskAsync(string id, TaskEntity updatedTask)  // ID'yi string (ObjectId) olarak alıyoruz
+    public async Task<ServiceResult> UpdateTaskAsync(UpdateTaskDto dto)  // ID'yi string (ObjectId) olarak alıyoruz
     {
-        var existingTask = await _mongoDbService.GetTaskByIdAsync(id);  // Mevcut görevi al
+        var existingTask = await _mongoDbService.GetTaskByIdAsync(dto.Id);  // Mevcut görevi al
+
         if (existingTask == null)
         {
-            throw new Exception("Task not found");  // Görev bulunamazsa hata fırlat
+            return new ServiceResult(false, "Task to update is not exist.");
         }
 
-        updatedTask.Id = existingTask.Id;  // Güncellenmiş görevde eski ID'yi koru
-        await _mongoDbService.UpdateTaskAsync(id, updatedTask);  // MongoDbService üzerinden görevi güncelle
+        var updatedTask = new TaskEntity
+        {
+            Id = ObjectId.Parse(dto.Id),
+            Description = dto.Description,
+            Title = dto.Title,
+            EndDate = dto.EndDate,
+            UserId = dto.UserId,
+            IsCompleted = dto.IsCompleted,
+        };
+
+        await _mongoDbService.UpdateTaskAsync(dto.Id, updatedTask);  // MongoDbService üzerinden görevi güncelle
+
+        return new ServiceResult(true, "Task updated successfuly.");
     }
 
     // Görev sil
