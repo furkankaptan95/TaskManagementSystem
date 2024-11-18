@@ -128,4 +128,12 @@ public class TaskController : ControllerBase
 
         return Ok(result.Message);
     }
+
+    [HttpPut("assign")]
+    public async Task<IActionResult> AssignTaskToUser([FromBody] AssignTaskDto assignDto)
+    {
+        var result = await _taskService.AssignTaskToUserAsync(assignDto);
+
+        return Ok(result.Message);
+    }
 }

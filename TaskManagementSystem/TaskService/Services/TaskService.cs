@@ -236,4 +236,17 @@ public class TaskService
 
         return new ServiceResult(true, "Answer added successfully.");
     }
+
+    public async Task<ServiceResult> AssignTaskToUserAsync(AssignTaskDto dto)
+    {
+
+        var existingTask = await _mongoDbService.GetTaskByIdAsync(dto.TaskId);  // Mevcut görevi al
+
+        existingTask.UserId = dto.UserId;
+
+        await _mongoDbService.UpdateTaskAsync(dto.TaskId, existingTask);  // MongoDbService üzerinden görevi güncelle
+
+        return new ServiceResult(true, "Task assigned to user successfuly.");
+    }
+
 }
