@@ -52,6 +52,12 @@ public class MongoDbService
         {
             _database.CreateCollection("users");
         }
+
+        var questionCollectionExists = _database.ListCollectionNames().ToList().Contains("questions");
+        if (!questionCollectionExists)
+        {
+            _database.CreateCollection("questions");
+        }
     }
 
     public async Task CreateTaskAsync(TaskEntity task)
@@ -96,6 +102,13 @@ public class MongoDbService
     {
         var filter = Builders<TaskEntity>.Filter.Eq(t => t.Id, new ObjectId(id));
         await _tasksCollection.ReplaceOneAsync(filter, task);
+    }
+
+    public async Task UpdateQuestionAsync(string id, QuestionEntity question)  // ID'yi ObjectId olarak alıyoruz
+    {
+        var filter = Builders<QuestionEntity>.Filter.Eq(t => t.Id, new ObjectId(id));
+
+        await _questionsCollection.ReplaceOneAsync(filter, question);
     }
 
     public async Task DeleteTaskAsync(string id)  // ID'yi ObjectId olarak alıyoruz

@@ -109,8 +109,15 @@ public class TaskController : ControllerBase
     }
 
     [HttpPost("reply-question")]
-    public async Task<IActionResult> ReplyQuestion([FromBody] object ReplyQuestionDto)
+    public async Task<IActionResult> ReplyQuestion([FromBody] ReplyQuestionDto replyQuestionDto)
     {
-        return Ok();
+        var result = await _taskService.ReplyQuestionAsync(replyQuestionDto);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Message);
+        }
+
+        return Ok(result.Message);
     }
 }

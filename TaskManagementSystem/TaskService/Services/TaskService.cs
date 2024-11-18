@@ -199,4 +199,26 @@ public class TaskService
 
         return new ServiceResult(true, "Question added successfully.");
     }
+
+    public async Task<ServiceResult> ReplyQuestionAsync(ReplyQuestionDto dto)
+    {
+        if (!ObjectId.TryParse(dto.QuestionId, out _))
+        {
+            return new ServiceResult(false, "Invalid QuestionId Format");
+        }
+
+        var question = await _mongoDbService.Questions.Find(u => u.Id == new ObjectId(dto.QuestionId)).FirstOrDefaultAsync();
+
+        if(question is null)
+        {
+            return new ServiceResult(false, "Question not found.");
+        }
+
+        question.Answer = dto.Reply;
+        question.AnsweredAt = DateTime.UtcNow;
+
+        await _mongoDbService.UpdateQuestionAsync(question.Id.ToString(),question);
+
+        return new ServiceResult(true, "Answer added successfully.");
+    }
 }
