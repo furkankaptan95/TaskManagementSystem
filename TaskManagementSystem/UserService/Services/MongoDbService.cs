@@ -7,7 +7,6 @@ public class MongoDbService
 {
     private readonly IMongoCollection<UserEntity> _usersCollection;
     private readonly IMongoDatabase _database;
-
     public MongoDbService(IConfiguration config)
     {
         var client = new MongoClient(config.GetValue<string>("MongoDbSettings:ConnectionString"));
