@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using UserAPI.DTOs;
 using UserAPI.Services;
 
 namespace UserAPI.Controllers;
@@ -20,5 +21,13 @@ public class UserController : ControllerBase
         var userDtos = await _userService.GetAllUsersAsync();
 
         return Ok(userDtos);
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    {
+        await _userService.CreateUserAsync(dto);
+
+        return Ok("User created successfully.");
     }
 }
