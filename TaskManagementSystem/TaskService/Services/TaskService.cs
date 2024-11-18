@@ -156,10 +156,25 @@ public class TaskService
         await _mongoDbService.DeleteTaskAsync(id);  // MongoDbService üzerinden görevi sil
     }
 
-    public async Task<List<TaskEntity>> GetTasksByUserIdAsync(string userId)  // UserId'yi string (ObjectId) olarak alıyoruz
+    public async Task<List<AllTasksDto>> GetTasksByUserIdAsync(string userId)  // UserId'yi string (ObjectId) olarak alıyoruz
     {
         var tasks = await _mongoDbService.GetAllTasksAsync();  // MongoDbService üzerinden tüm görevleri al
-        return tasks.Where(task => task.UserId == userId).ToList();  // Kullanıcıya ait görevleri filtrele
+        var userTasks = tasks.Where(task => task.UserId == userId).ToList();
+
+        var dtos = userTasks
+       .Select(item => new AllTasksDto
+       {
+           Id = item.Id.ToString(),
+           Description = item.Description,
+           Title = item.Title,
+           IsCompleted = item.IsCompleted,
+           CreatedAt = item.CreatedAt,
+           EndDate = item.EndDate,
+           UserId = item.UserId,
+       })
+       .ToList();
+
+        return dtos;
     }
 
     public async Task<ServiceResult> AddQuestionAsync(AddQuestionDto dto)

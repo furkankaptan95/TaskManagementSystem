@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
+using System.Threading.Tasks;
 using TaskAPI.DTOs;
 using TaskAPI.Services;
 
@@ -42,7 +43,7 @@ public class TaskController : ControllerBase
     {
         await _taskService.AddTaskAsync(addDto);
 
-        return Ok();
+        return Ok("Task added successfully.");
     }
 
     [HttpPut("update")]
@@ -68,13 +69,20 @@ public class TaskController : ControllerBase
 
         await _taskService.DeleteTaskAsync(taskId);
 
-        return Ok();
+        return Ok("Task deleted successfully.");
     }
 
     [HttpGet("user-tasks/{userId}")]
     public async Task<IActionResult> GetByUserId([FromRoute] string userId)
     {
-        return Ok();
+        if (!ObjectId.TryParse(userId, out _))
+        {
+            return BadRequest("Invalid UserId format.");
+        }
+        
+        var userTasks = await _taskService.GetTasksByUserIdAsync(userId);
+
+        return Ok(userTasks);
     }
 
     [HttpPut("status/{taskId}")]
