@@ -7,6 +7,7 @@ public class MongoDbService
 {
     private readonly IMongoCollection<TaskEntity> _tasksCollection;
     private readonly IMongoCollection<UserEntity> _usersCollection;
+    private readonly IMongoCollection<QuestionEntity> _questionsCollection;
     private readonly IMongoDatabase _database;
 
     public MongoDbService(IConfiguration config)
@@ -17,6 +18,7 @@ public class MongoDbService
         // Koleksiyonlar
         _tasksCollection = _database.GetCollection<TaskEntity>("tasks");
         _usersCollection = _database.GetCollection<UserEntity>("users");
+        _questionsCollection = _database.GetCollection<QuestionEntity>("questions");
 
         // Veritabanı ve Koleksiyonların varlığını kontrol et
         CreateDatabaseIfNotExists();
@@ -24,6 +26,7 @@ public class MongoDbService
 
     public IMongoCollection<TaskEntity> Tasks => _tasksCollection;
     public IMongoCollection<UserEntity> Users => _usersCollection;
+    public IMongoCollection<QuestionEntity> Questions => _questionsCollection;
 
     private void CreateDatabaseIfNotExists()
     {
@@ -51,19 +54,21 @@ public class MongoDbService
         }
     }
 
-    // Create - Yeni bir görev ekler
     public async Task CreateTaskAsync(TaskEntity task)
     {
         await _tasksCollection.InsertOneAsync(task);
     }
 
-    // Read - Tüm görevleri getirir
+    public async Task AddQuestionAsync(QuestionEntity question)
+    {
+        await _questionsCollection.InsertOneAsync(question);
+    }
+
     public async Task<List<TaskEntity>> GetAllTasksAsync()
     {
         return await _tasksCollection.Find(task => true).ToListAsync();
     }
 
-    // Read - ID'ye göre bir görev getirir ve ilişkili kullanıcıyı da getirir
     public async Task<TaskEntity> GetTaskByIdAsync(string id)  // ID olarak string (ObjectId) alıyoruz
     {
         // Görevi bul
@@ -87,14 +92,12 @@ public class MongoDbService
         return task;
     }
 
-    // Update - Görev bilgisini günceller
     public async Task UpdateTaskAsync(string id, TaskEntity task)  // ID'yi ObjectId olarak alıyoruz
     {
         var filter = Builders<TaskEntity>.Filter.Eq(t => t.Id, new ObjectId(id));
         await _tasksCollection.ReplaceOneAsync(filter, task);
     }
 
-    // Delete - Görevi siler
     public async Task DeleteTaskAsync(string id)  // ID'yi ObjectId olarak alıyoruz
     {
         var filter = Builders<TaskEntity>.Filter.Eq(t => t.Id, new ObjectId(id));

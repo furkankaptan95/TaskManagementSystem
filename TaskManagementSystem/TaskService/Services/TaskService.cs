@@ -15,7 +15,6 @@ public class TaskService
         _mongoDbService = mongoDbService;
     }
 
-    // Tüm görevleri getir
     public async Task<List<AllTasksDto>> GetAllTasksAsync()
     {
         var entities = await _mongoDbService.GetAllTasksAsync();
@@ -36,7 +35,6 @@ public class TaskService
         return dtos;
     }
 
-    // Görev ID'ye göre getir
     public async Task<SingleTaskDto> GetTaskByIdAsync(string id)  // ID'yi string (ObjectId) türüyle alıyoruz
     {
         var task = await _mongoDbService.GetTaskByIdAsync(id);  // MongoDbService üzerinden görev bilgilerini al
@@ -61,7 +59,6 @@ public class TaskService
         return dto;
     }
 
-    // Yeni görev oluştur
     public async Task AddTaskAsync(AddTaskDto dto)
     {
         if(!string.IsNullOrEmpty(dto.UserId))
@@ -85,15 +82,36 @@ public class TaskService
         await _mongoDbService.CreateTaskAsync(entity);
     }
 
-    // Var olan görevi güncelle
     public async Task<ServiceResult> UpdateTaskAsync(UpdateTaskDto dto)  // ID'yi string (ObjectId) olarak alıyoruz
     {
+        if (!ObjectId.TryParse(dto.Id, out _))
+        {
+            return new ServiceResult(false, "Invalid TaskId Format");
+        }
+
         var existingTask = await _mongoDbService.GetTaskByIdAsync(dto.Id);  // Mevcut görevi al
 
         if (existingTask == null)
         {
             return new ServiceResult(false, "Task to update is not exist.");
         }
+
+        if(dto.UserId is not null)
+        {
+            if (!ObjectId.TryParse(dto.UserId, out _))
+            {
+                return new ServiceResult(false, "Invalid UserId Format");
+            }
+
+            var user = await _mongoDbService.Users.Find(u => u.Id == new ObjectId(dto.UserId)).FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return new ServiceResult(false, "User not found.");
+            }
+        }
+
+       
 
         var updatedTask = new TaskEntity
         {
@@ -126,8 +144,6 @@ public class TaskService
         return new ServiceResult(true, "Task updated successfuly.");
     }
 
-
-    // Görev sil
     public async Task DeleteTaskAsync(string id)  // ID'yi string (ObjectId) olarak alıyoruz
     {
         var existingTask = await _mongoDbService.GetTaskByIdAsync(id);  // Mevcut görevi al
@@ -140,10 +156,47 @@ public class TaskService
         await _mongoDbService.DeleteTaskAsync(id);  // MongoDbService üzerinden görevi sil
     }
 
-    // Kullanıcıya göre görevleri listele
     public async Task<List<TaskEntity>> GetTasksByUserIdAsync(string userId)  // UserId'yi string (ObjectId) olarak alıyoruz
     {
         var tasks = await _mongoDbService.GetAllTasksAsync();  // MongoDbService üzerinden tüm görevleri al
         return tasks.Where(task => task.UserId == userId).ToList();  // Kullanıcıya ait görevleri filtrele
+    }
+
+    public async Task<ServiceResult> AddQuestionAsync(AddQuestionDto dto)
+    {
+        if (!ObjectId.TryParse(dto.UserId, out _))
+        {
+            return new ServiceResult(false, "Invalid UserId Format");
+        }
+
+        var user = await _mongoDbService.Users.Find(u => u.Id == new ObjectId(dto.UserId)).FirstOrDefaultAsync();
+
+        if (user == null)
+        {
+            return new ServiceResult(false, "User not found.");
+        }
+
+        if (!ObjectId.TryParse(dto.TaskId, out _))
+        {
+            return new ServiceResult(false, "Invalid TaskId Format");
+        }
+
+        var task = await _mongoDbService.Tasks.Find(u => u.Id == new ObjectId(dto.TaskId)).FirstOrDefaultAsync();
+
+        if (task == null)
+        {
+            return new ServiceResult(false, "Task not found.");
+        }
+
+        var entity = new QuestionEntity
+        {
+            Content = dto.Content,
+            TaskId = dto.TaskId,
+            UserId = dto.UserId,
+        };
+
+        await _mongoDbService.AddQuestionAsync(entity);
+
+        return new ServiceResult(true, "Question added successfully.");
     }
 }
