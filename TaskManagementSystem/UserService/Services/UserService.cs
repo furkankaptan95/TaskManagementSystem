@@ -1,4 +1,5 @@
-﻿using UserAPI.Entities;
+﻿using UserAPI.DTOs;
+using UserAPI.Entities;
 
 namespace UserAPI.Services;
 public class UserService
@@ -11,9 +12,20 @@ public class UserService
     }
 
     // Tüm kullanıcıları getir
-    public async Task<List<UserEntity>> GetAllUsersAsync()
+    public async Task<List<AllUsersDto>> GetAllUsersAsync()
     {
-        return await _mongoDbService.GetAllUsersAsync();  // MongoDbService üzerinden tüm kullanıcıları getir
+        var entities = await _mongoDbService.GetAllUsersAsync();
+
+        var dtos = entities
+            .Select(user => new AllUsersDto
+            {
+                Id = user.Id.ToString(),
+                Email = user.Email,
+                Username = user.Username,
+
+            }).ToList();
+
+        return dtos;
     }
 
     // Kullanıcı ID'sine göre kullanıcıyı getir
