@@ -12,6 +12,8 @@ public class UserEntity
     public string Email { get; set; }
     public byte[] PasswordHash { get; set; }
     public byte[] PasswordSalt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
     public string Role { get; set; } = "worker";
     [BsonIgnore]
     public ICollection<TaskEntity> Tasks { get; set; } = new List<TaskEntity>();

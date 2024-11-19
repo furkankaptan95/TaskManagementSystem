@@ -50,4 +50,22 @@ public class UserController : ControllerBase
 
         return Ok(user);
     }
+
+    [HttpPut("update")]
+    public async Task<IActionResult> Update([FromBody] UpdateUserDto dto)
+    {
+        if (!ObjectId.TryParse(dto.Id, out _))
+        {
+            return BadRequest("Invalid UserId format.");
+        }
+
+        var result = await _userService.UpdateUserAsync(dto);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Message);
+        }
+
+        return Ok(result.Message);
+    }
 }

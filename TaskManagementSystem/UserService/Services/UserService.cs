@@ -62,16 +62,22 @@ public class UserService
         await _mongoDbService.CreateUserAsync(userEntity);
     }
 
-    public async Task UpdateUserAsync(string id, UserEntity updatedUser)  // id'yi ObjectId olarak alıyoruz
+    public async Task<ServiceResult> UpdateUserAsync(UpdateUserDto dto)
     {
-        var existingUser = await _mongoDbService.GetUserByIdAsync(id);  // Mevcut kullanıcıyı al
-        if (existingUser == null)
+        var existingUser = await _mongoDbService.GetUserByIdAsync(dto.Id);
+
+        if (existingUser is null)
         {
-            throw new KeyNotFoundException("User not found");  // Kullanıcı bulunamazsa özel hata
+            return new ServiceResult(false,"User not found.");
         }
 
-        updatedUser.Id = existingUser.Id;  // Güncellenmiş kullanıcıda eski ID'yi koru
-        await _mongoDbService.UpdateUserAsync(id, updatedUser);  // MongoDbService üzerinden kullanıcıyı güncelle
+        existingUser.Email = dto.Email;
+        existingUser.Username = dto.Username;
+        existingUser.UpdatedAt = DateTime.UtcNow;
+
+        await _mongoDbService.UpdateUserAsync(dto.Id, existingUser);
+
+        return new ServiceResult(true, "User updated successfully.");
     }
 
     public async Task DeleteUserAsync(string id)  // id'yi ObjectId olarak alıyoruz
