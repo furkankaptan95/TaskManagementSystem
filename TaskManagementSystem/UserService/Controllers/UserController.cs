@@ -86,4 +86,17 @@ public class UserController : ControllerBase
 
         return Ok(result.Message);
     }
+
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] NewPasswordDto dto)
+    {
+        var result = await _userService.ChangePasswordAsync(dto);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Message);
+        }
+
+        return Ok(result.Message);
+    }
 }

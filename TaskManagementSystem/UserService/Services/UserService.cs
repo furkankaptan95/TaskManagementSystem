@@ -80,6 +80,27 @@ public class UserService
         return new ServiceResult(true, "User updated successfully.");
     }
 
+    public async Task<ServiceResult> ChangePasswordAsync(NewPasswordDto dto)
+    {
+        var existingUser = await _mongoDbService.GetUserByIdAsync(dto.UserId);
+
+        if (existingUser is null)
+        {
+            return new ServiceResult(false, "User not found.");
+        }
+
+        byte[] passwordHash, passwordSalt;
+
+        HashingHelper.CreatePasswordHash(dto.Password, out passwordHash, out passwordSalt);
+
+        existingUser.PasswordHash = passwordHash;
+        existingUser.PasswordSalt = passwordSalt;
+
+        await _mongoDbService.UpdateUserAsync(dto.UserId, existingUser);
+
+        return new ServiceResult(true, "Password changed successfully.");
+    }
+
     public async Task<ServiceResult> DeleteUserAsync(string id)  // id'yi ObjectId olarak alıyoruz
     {
         var existingUser = await _mongoDbService.GetUserByIdAsync(id);
