@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35208.52
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskAPI", "TaskService\TaskAPI.csproj", "{28E29424-ED8C-40CF-BDF8-FFA803EB1F5B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskAPI", "TaskService\TaskAPI.csproj", "{28E29424-ED8C-40CF-BDF8-FFA803EB1F5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAPI", "UserService\UserAPI.csproj", "{08577FE7-51C1-44AE-9BA5-1A40DA7CBCFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UserAPI", "UserService\UserAPI.csproj", "{08577FE7-51C1-44AE-9BA5-1A40DA7CBCFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{A57E7439-8C8D-4A39-8469-FE142DC96404}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{A57E7439-8C8D-4A39-8469-FE142DC96404}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthAPI", "AuthAPI\AuthAPI.csproj", "{592F9181-C47C-45B5-BCC3-D02E43EA08CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{A57E7439-8C8D-4A39-8469-FE142DC96404}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A57E7439-8C8D-4A39-8469-FE142DC96404}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A57E7439-8C8D-4A39-8469-FE142DC96404}.Release|Any CPU.Build.0 = Release|Any CPU
+		{592F9181-C47C-45B5-BCC3-D02E43EA08CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{592F9181-C47C-45B5-BCC3-D02E43EA08CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{592F9181-C47C-45B5-BCC3-D02E43EA08CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{592F9181-C47C-45B5-BCC3-D02E43EA08CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

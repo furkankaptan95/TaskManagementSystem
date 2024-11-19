@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
-using System.Threading.Tasks;
 using UserAPI.DTOs;
 using UserAPI.Services;
 
