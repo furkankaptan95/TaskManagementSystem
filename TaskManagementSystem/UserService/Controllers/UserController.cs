@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MongoDB.Bson;
+using System.Threading.Tasks;
 using UserAPI.DTOs;
 using UserAPI.Services;
 
@@ -29,5 +31,23 @@ public class UserController : ControllerBase
         await _userService.CreateUserAsync(dto);
 
         return Ok("User created successfully.");
+    }
+
+    [HttpGet("user/{userId}")]
+    public async Task<IActionResult> GetById([FromRoute] string userId)
+    {
+        if (!ObjectId.TryParse(userId, out _))
+        {
+            return BadRequest("Invalid UserId format.");
+        }
+
+        var user = await _userService.GetUserByIdAsync(userId);
+
+        if(user is null)
+        {
+            return NotFound("User not found.");
+        }
+
+        return Ok(user);
     }
 }

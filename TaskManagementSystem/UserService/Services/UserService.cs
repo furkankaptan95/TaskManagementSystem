@@ -27,16 +27,23 @@ public class UserService
         return dtos;
     }
 
-    public async Task<UserEntity> GetUserByIdAsync(string id)  // ObjectId olarak alıyoruz
+    public async Task<SingleUserDto> GetUserByIdAsync(string id)
     {
-        var user = await _mongoDbService.GetUserByIdAsync(id);  // MongoDbService üzerinden kullanıcı bilgilerini al
+        var userEntity = await _mongoDbService.GetUserByIdAsync(id);
 
-        if (user == null)
+        SingleUserDto dto = null;
+
+        if (userEntity is not null)
         {
-            throw new KeyNotFoundException("User not found");  // Kullanıcı bulunamazsa özel hata
+            dto = new SingleUserDto
+            {
+                Email = userEntity.Email,
+                Username = userEntity.Username,
+                Id = id,
+            };
         }
 
-        return user;
+        return dto;
     }
 
     public async Task CreateUserAsync(RegisterDto dto)
