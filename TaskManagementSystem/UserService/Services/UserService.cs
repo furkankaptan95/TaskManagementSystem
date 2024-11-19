@@ -80,14 +80,17 @@ public class UserService
         return new ServiceResult(true, "User updated successfully.");
     }
 
-    public async Task DeleteUserAsync(string id)  // id'yi ObjectId olarak alıyoruz
+    public async Task<ServiceResult> DeleteUserAsync(string id)  // id'yi ObjectId olarak alıyoruz
     {
-        var existingUser = await _mongoDbService.GetUserByIdAsync(id);  // Mevcut kullanıcıyı al
+        var existingUser = await _mongoDbService.GetUserByIdAsync(id);
+
         if (existingUser == null)
         {
-            throw new KeyNotFoundException("User not found");  // Kullanıcı bulunamazsa özel hata
+            return new ServiceResult(false, "User to delete doesn't exist.");
         }
 
-        await _mongoDbService.DeleteUserAsync(id);  // MongoDbService üzerinden kullanıcıyı sil
+        await _mongoDbService.DeleteUserAsync(id);
+
+        return new ServiceResult(true, "User deleted successfully.");
     }
 }

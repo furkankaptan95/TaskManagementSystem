@@ -68,4 +68,22 @@ public class UserController : ControllerBase
 
         return Ok(result.Message);
     }
+
+    [HttpDelete("delete/{userId}")]
+    public async Task<IActionResult> Delete([FromRoute] string userId)
+    {
+        if (!ObjectId.TryParse(userId, out _))
+        {
+            return BadRequest("Invalid UserId format.");
+        }
+
+        var result = await _userService.DeleteUserAsync(userId);
+        
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Message);
+        }
+
+        return Ok(result.Message);
+    }
 }
