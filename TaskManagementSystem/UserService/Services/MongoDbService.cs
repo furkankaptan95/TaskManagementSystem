@@ -15,25 +15,6 @@ public class MongoDbService
         // Koleksiyon
         _usersCollection = _database.GetCollection<UserEntity>("users");
 
-        // Veritabanı ve Koleksiyonların varlığını kontrol et
-        CreateDatabaseIfNotExists();
-    }
-
-    private void CreateDatabaseIfNotExists()
-    {
-        // Veritabanının var olup olmadığını kontrol et
-        var databaseNames = _database.Client.ListDatabaseNames().ToList();
-        if (!databaseNames.Contains(_database.DatabaseNamespace.DatabaseName))
-        {
-            _database.Client.GetDatabase(_database.DatabaseNamespace.DatabaseName);
-        }
-
-        // Koleksiyonun var olup olmadığını kontrol et
-        var userCollectionExists = _database.ListCollectionNames().ToList().Contains("users");
-        if (!userCollectionExists)
-        {
-            _database.CreateCollection("users");
-        }
     }
 
     public IMongoCollection<UserEntity> Users => _usersCollection;
