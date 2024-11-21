@@ -171,6 +171,35 @@ public class AuthService
         return new ServiceResult(true,"Account verified successfully.");
     }
 
+    public ServiceResult ValidateToken(string token)
+    {
+        var parts = token.Split('.');
+
+        if (parts.Length != 3)
+        {
+            return new ServiceResult(false,"Wrong JWT Format");
+        }
+
+        var handler = new JwtSecurityTokenHandler();
+        if (!handler.CanReadToken(token))
+        {
+            return new ServiceResult(false, "Token cannot be read or Wrong JWT Format");
+        }
+
+        var header = parts[0];
+        var payload = parts[1];
+        var signature = parts[2];
+
+        var computedSignature = CreateSignature(header, payload, _configuration["Jwt:Key"]);
+
+        if (computedSignature == signature)
+        {
+            return new ServiceResult(true,"Valid JWT Token");
+        }
+
+        return new ServiceResult(false, "Invalid Token");
+    }
+
     private string GenerateJwtToken(UserEntity user)
     {
         var claims = new List<Claim>
