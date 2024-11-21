@@ -162,13 +162,13 @@ public class AuthService
         var updateUser = Builders<UserEntity>.Update
             .Set(user => user.IsActive, true);
 
-         await _mongoDbService.UpdateUserAsync(userFilter, updateUser);
+        await _mongoDbService.UpdateUserAsync(userFilter, updateUser);
 
         var deleteUserVerificationFilter = Builders<UserVerificationEntity>.Filter.Eq(uv => uv.Id, userVerification.Id);
 
         await _mongoDbService.DeleteUserVerificationAsync(deleteUserVerificationFilter);
 
-        return new ServiceResult(true,"Account verified successfully.");
+        return new ServiceResult(true, "Account verified successfully.");
     }
 
     public ServiceResult ValidateToken(string token)
@@ -177,7 +177,7 @@ public class AuthService
 
         if (parts.Length != 3)
         {
-            return new ServiceResult(false,"Wrong JWT Format");
+            return new ServiceResult(false, "Wrong JWT Format");
         }
 
         var handler = new JwtSecurityTokenHandler();
@@ -194,7 +194,7 @@ public class AuthService
 
         if (computedSignature == signature)
         {
-            return new ServiceResult(true,"Valid JWT Token");
+            return new ServiceResult(true, "Valid JWT Token");
         }
 
         return new ServiceResult(false, "Invalid Token");
@@ -202,12 +202,12 @@ public class AuthService
 
     public async Task<ServiceResult> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
     {
-        var userFilter = Builders<UserEntity>.Filter.Eq(u => u.Email , forgotPasswordDto.Email);
+        var userFilter = Builders<UserEntity>.Filter.Eq(u => u.Email, forgotPasswordDto.Email);
         var userEntity = await _mongoDbService.GetUserAsync(userFilter);
-        
+
         if (userEntity is null)
         {
-            return new ServiceResult(false,"User not found");
+            return new ServiceResult(false, "User not found");
         }
 
         var token = Guid.NewGuid().ToString().Substring(0, 6);
@@ -221,6 +221,24 @@ public class AuthService
         await _mongoDbService.CreateUserVerificationAsync(forgotPasswordEntity);
 
         return new ServiceResult(true, "Please check your Email to renew your password.");
+    }
+
+    public async Task<ServiceResult> RenewPasswordVerifyEmailAsync(RenewPasswordDto dto)
+    {
+        var userVerificationFilter = Builders<UserVerificationEntity>.Filter.Eq(uv => uv.Token, dto.Token);
+
+        var userVerification = await _mongoDbService.GetUserVerificationAsync(userVerificationFilter);
+
+        if (userVerification == null || userVerification.Expiration < DateTime.UtcNow || userVerification.User.Email != dto.Email)
+        {
+            return new ServiceResult(false, "No valid User Verification.");
+        }
+
+        var deleteUserVerificationFilter = Builders<UserVerificationEntity>.Filter.Eq(uv => uv.Id, userVerification.Id);
+
+        await _mongoDbService.DeleteUserVerificationAsync(deleteUserVerificationFilter);
+
+        return new ServiceResult(true, "Successfully verified. You can change password.");
     }
 
     private string GenerateJwtToken(UserEntity user)
