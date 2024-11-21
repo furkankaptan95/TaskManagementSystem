@@ -200,6 +200,29 @@ public class AuthService
         return new ServiceResult(false, "Invalid Token");
     }
 
+    public async Task<ServiceResult> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
+    {
+        var userFilter = Builders<UserEntity>.Filter.Eq(u => u.Email , forgotPasswordDto.Email);
+        var userEntity = await _mongoDbService.GetUserAsync(userFilter);
+        
+        if (userEntity is null)
+        {
+            return new ServiceResult(false,"User not found");
+        }
+
+        var token = Guid.NewGuid().ToString().Substring(0, 6);
+
+        var forgotPasswordEntity = new UserVerificationEntity
+        {
+            UserId = userEntity.Id.ToString(),
+            Token = token,
+        };
+
+        await _mongoDbService.CreateUserVerificationAsync(forgotPasswordEntity);
+
+        return new ServiceResult(true, "Please check your Email to renew your password.");
+    }
+
     private string GenerateJwtToken(UserEntity user)
     {
         var claims = new List<Claim>

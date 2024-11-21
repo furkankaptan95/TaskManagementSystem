@@ -72,9 +72,22 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("validate-token")]
-    public async Task<IActionResult> ValidateTokenAsync([FromBody] string token)
+    public async Task<IActionResult> ValidateToken([FromBody] string token)
     {
         var result = _authService.ValidateToken(token);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Message);
+        }
+
+        return Ok(result.Message);
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+    {      
+        var result = await _authService.ForgotPasswordAsync(dto);
 
         if (!result.IsSuccess)
         {
