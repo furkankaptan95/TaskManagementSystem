@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("validate-token")]
-    public async Task<IActionResult> ValidateToken([FromBody] string token)
+    public IActionResult ValidateToken([FromBody] string token)
     {
         var result = _authService.ValidateToken(token);
 
@@ -124,7 +124,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("new-verification")]
-    public async Task<IActionResult> NewVerificationAsync([FromBody] NewVerificationMailDto dto)
+    public async Task<IActionResult> NewVerification([FromBody] NewVerificationMailDto dto)
     {
         var result = await _authService.NewVerificationAsync(dto);
 
@@ -137,7 +137,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("revoke-token")]
-    public async Task<IActionResult> RevokeTokenAsync([FromBody] string token)
+    public async Task<IActionResult> RevokeToken([FromBody] string token)
     {
         if (string.IsNullOrEmpty(token))
         {
@@ -148,9 +148,9 @@ public class AuthController : ControllerBase
 
         if (!result.IsSuccess)
         {
-             return NotFound(result);
+             return NotFound(result.Message);
         }
 
-        return Ok(result);
+        return Ok(result.Message);
     }
 }
