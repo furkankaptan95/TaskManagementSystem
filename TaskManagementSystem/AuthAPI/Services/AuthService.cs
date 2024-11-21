@@ -297,6 +297,22 @@ public class AuthService
 
     }
 
+    public async Task<ServiceResult> RevokeTokenAsync(string token)
+    {
+        var refreshTokenFilter = Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.Token, token);
+        var refreshToken = await _mongoDbService.GetRefreshTokenWithFilterAsync(refreshTokenFilter);
+
+        if (refreshToken is null)
+        {
+            return new ServiceResult(false, "Token to revoke is not found.");
+        }
+
+        var update = Builders<RefreshTokenEntity>.Update.Set(rt => rt.IsRevoked, true);
+
+        await _mongoDbService.UpdateSingleRefreshTokenAsnc(refreshTokenFilter, update);
+
+        return new ServiceResult(true, "Token revoked successfully.");
+    }
     private string GenerateJwtToken(UserEntity user)
     {
         var claims = new List<Claim>

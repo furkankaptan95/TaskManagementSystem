@@ -135,4 +135,22 @@ public class AuthController : ControllerBase
 
         return Ok(result.Message);
     }
+
+    [HttpPost("revoke-token")]
+    public async Task<IActionResult> RevokeTokenAsync([FromBody] string token)
+    {
+        if (string.IsNullOrEmpty(token))
+        {
+            return BadRequest("Token can not be null or empty.");
+        }
+
+        var result = await _authService.RevokeTokenAsync(token);
+
+        if (!result.IsSuccess)
+        {
+             return NotFound(result);
+        }
+
+        return Ok(result);
+    }
 }

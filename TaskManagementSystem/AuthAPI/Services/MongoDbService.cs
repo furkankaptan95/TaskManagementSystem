@@ -38,6 +38,16 @@ public class MongoDbService
     {
         await _userVerificationsCollection.InsertOneAsync(entity);
     }
+
+    public async Task<RefreshTokenEntity> GetRefreshTokenWithFilterAsync(FilterDefinition<RefreshTokenEntity> filter)
+    {
+        var refreshTokenEntity = await _refreshTokensCollection
+            .Find(filter)
+            .FirstOrDefaultAsync();
+
+        return refreshTokenEntity;
+    }
+
     public async Task<RefreshTokenEntity> GetRefreshTokenAsync(string token)
     {
         var filter = Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.Token, token) &
@@ -129,6 +139,13 @@ public class MongoDbService
 
         // Güncelleme işlemini uygula
         var result = await _refreshTokensCollection.UpdateManyAsync(filter, update);
+
+    }
+
+    public async Task UpdateSingleRefreshTokenAsnc(FilterDefinition<RefreshTokenEntity> filter, UpdateDefinition<RefreshTokenEntity> update)
+    {
+       
+        var result = await _refreshTokensCollection.UpdateOneAsync(filter, update);
 
     }
 
