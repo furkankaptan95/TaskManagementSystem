@@ -14,6 +14,14 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    {
+        var result = await _authService.RegisterAsync(dto);
+
+        return Ok(result.Message);
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
@@ -28,7 +36,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpGet("refresh-token/{token}")]
-    public async Task<IActionResult> RefreshTokenAsync([FromRoute] string token)
+    public async Task<IActionResult> RefreshToken([FromRoute] string token)
     {
             if (string.IsNullOrEmpty(token))
             {
@@ -45,4 +53,16 @@ public class AuthController : ControllerBase
             return Ok(result);
     }
 
+    [HttpPost("verify-email")]
+    public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto dto)
+    {
+        var result = await _authService.VerifyEmailAsync(dto);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Message); 
+        }
+
+        return Ok(result.Message);
+    }
 }

@@ -19,12 +19,6 @@ public class MongoDbService
 
     public IMongoCollection<UserEntity> Users => _usersCollection;
 
-    // Create - Yeni bir kullanıcı ekler
-    public async Task CreateUserAsync(UserEntity user)
-    {
-        await _usersCollection.InsertOneAsync(user);
-    }
-
     // Read - Tüm kullanıcıları getirir
     public async Task<List<UserEntity>> GetAllUsersAsync()
     {

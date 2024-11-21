@@ -10,6 +10,8 @@ public class UserEntity
     public string Email { get; set; }
     public byte[] PasswordHash { get; set; }
     public byte[] PasswordSalt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public bool IsActive { get; set; } = false;
     public string Role { get; set; } = "worker";
 
     [BsonIgnore]

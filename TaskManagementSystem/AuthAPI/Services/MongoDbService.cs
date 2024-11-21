@@ -1,4 +1,5 @@
-﻿using AuthAPI.Entities;
+﻿using AuthAPI.DTOs;
+using AuthAPI.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -7,6 +8,7 @@ public class MongoDbService
 {
     private readonly IMongoCollection<UserEntity> _usersCollection;
     private readonly IMongoCollection<RefreshTokenEntity> _refreshTokensCollection;
+    private readonly IMongoCollection<UserVerificationEntity> _userVerificationsCollection;
     private readonly IMongoDatabase _database;
     public MongoDbService(IConfiguration config)
     {
@@ -16,15 +18,25 @@ public class MongoDbService
         // Koleksiyon
         _usersCollection = _database.GetCollection<UserEntity>("users");
         _refreshTokensCollection = _database.GetCollection<RefreshTokenEntity>("refreshTokens");
+        _userVerificationsCollection = _database.GetCollection<UserVerificationEntity>("userVerifications");
 
     }
 
     public IMongoCollection<UserEntity> Users => _usersCollection;
     public IMongoCollection<RefreshTokenEntity> RefreshTokens => _refreshTokensCollection;
-    // Create - Yeni bir kullanıcı ekler
+    public IMongoCollection<UserVerificationEntity> UserVerficications => _userVerificationsCollection;
+    public async Task CreateUserAsync(UserEntity user)
+    {
+        await _usersCollection.InsertOneAsync(user);
+    }
     public async Task CreateRefreshTokenAsync(RefreshTokenEntity token)
     {
         await _refreshTokensCollection.InsertOneAsync(token);
+    }
+
+    public async Task CreateUserVerificationAsync(UserVerificationEntity entity)
+    {
+        await _userVerificationsCollection.InsertOneAsync(entity);
     }
     public async Task<RefreshTokenEntity> GetRefreshTokenAsync(string token)
     {
@@ -42,7 +54,9 @@ public class MongoDbService
             return null;
         }
 
-        var user = await GetUserByIdAsync(refreshTokenEntity.UserId);
+        var userFilter = Builders<UserEntity>.Filter.Eq(u => u.Id , new ObjectId(refreshTokenEntity.UserId));
+
+        var user = await GetUserAsync(userFilter);
         refreshTokenEntity.User = user;
 
         var updateFilter = Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.Token, token);
@@ -53,9 +67,30 @@ public class MongoDbService
         return refreshTokenEntity;
     }
 
-    public async Task<UserEntity> GetUserByIdAsync(string id)
+    public async Task<UserVerificationEntity> GetUserVerificationAsync(FilterDefinition<UserVerificationEntity> filter)
     {
-        var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, new ObjectId(id));
+        var userVerification = await _userVerificationsCollection.Find(filter).FirstOrDefaultAsync();
+
+        if(userVerification is null)
+        {
+            return userVerification;
+        }
+
+        var userFilter = Builders<UserEntity>.Filter.Eq(u => u.Id, new ObjectId(userVerification.UserId));
+        var user = await GetUserAsync(userFilter);
+
+        userVerification.User = user;
+
+        return userVerification;
+    }
+
+    public async Task UpdateUserAsync(FilterDefinition<UserEntity> filter, UpdateDefinition<UserEntity> update)
+    {
+        await _usersCollection.UpdateOneAsync(filter, update);
+    }
+
+    public async Task<UserEntity> GetUserAsync(FilterDefinition<UserEntity> filter)
+    {
         return await _usersCollection.Find(filter).FirstOrDefaultAsync();
     }
     // Read - Tüm kullanıcıları getirir
@@ -97,18 +132,16 @@ public class MongoDbService
 
     }
 
-    // Update - Kullanıcı bilgilerini günceller
-    public async Task UpdateUserAsync(string id, UserEntity user)
-    {
-        var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, new ObjectId(id));
-        await _usersCollection.ReplaceOneAsync(filter, user);
-    }
-
     // Delete - Kullanıcıyı siler
     public async Task DeleteUserAsync(string id)
     {
         var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, new ObjectId(id));
         await _usersCollection.DeleteOneAsync(filter);
+    }
+
+    public async Task DeleteUserVerificationAsync(FilterDefinition<UserVerificationEntity> filter)
+    {
+        await _userVerificationsCollection.DeleteOneAsync(filter);
     }
 }
 

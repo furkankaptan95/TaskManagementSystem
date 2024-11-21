@@ -1,4 +1,4 @@
-﻿namespace UserAPI.DTOs;
+﻿namespace AuthAPI.DTOs;
 public class RegisterDto
 {
     public string Username { get; set; }

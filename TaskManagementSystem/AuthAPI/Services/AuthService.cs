@@ -4,6 +4,7 @@ using IdentityModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -16,11 +17,39 @@ public class AuthService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly MongoDbService _mongoDbService;
 
-    public AuthService(MongoDbService mongoDbService,IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
+    public AuthService(MongoDbService mongoDbService, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
     {
         _mongoDbService = mongoDbService;
         _httpContextAccessor = httpContextAccessor;
         _configuration = configuration;
+    }
+
+    public async Task<ServiceResult> RegisterAsync(RegisterDto dto)
+    {
+        var userEntity = new UserEntity();
+
+        byte[] passwordHash, passwordSalt;
+
+        HashingHelper.CreatePasswordHash(dto.Password, out passwordHash, out passwordSalt);
+
+        userEntity.Email = dto.Email;
+        userEntity.Username = dto.Username;
+        userEntity.PasswordHash = passwordHash;
+        userEntity.PasswordSalt = passwordSalt;
+
+        await _mongoDbService.CreateUserAsync(userEntity);
+
+        var token = Guid.NewGuid().ToString().Substring(0, 6);
+
+        var userVerification = new UserVerificationEntity
+        {
+            UserId = userEntity.Id.ToString(),
+            Token = token
+        };
+
+        await _mongoDbService.CreateUserVerificationAsync(userVerification);
+
+        return new ServiceResult(true, "Registered successfully. Please visit your Email to verif your account.");
     }
 
     public async Task<ServiceResult<TokensDto>> LoginAsync(LoginDto dto)
@@ -29,12 +58,12 @@ public class AuthService
 
         if (user == null)
         {
-            return new ServiceResult<TokensDto>(false,"User not found.");
+            return new ServiceResult<TokensDto>(false, "User not found.");
         }
 
         if (!HashingHelper.VerifyPasswordHash(dto.Password, user.PasswordHash, user.PasswordSalt))
         {
-            return new ServiceResult<TokensDto>(false,"Wrong password.");
+            return new ServiceResult<TokensDto>(false, "Wrong password.");
         }
 
         await _mongoDbService.UpdateAllTokensToRevokedAsync(user.Id.ToString());
@@ -58,7 +87,7 @@ public class AuthService
             RefreshToken = refreshTokenString
         };
 
-        return new ServiceResult<TokensDto>(true,"Logged in successfully.",tokensDto);
+        return new ServiceResult<TokensDto>(true, "Logged in successfully.", tokensDto);
     }
 
     public async Task<ServiceResult<TokensDto>> RefreshTokenAsync(string token)
@@ -88,8 +117,39 @@ public class AuthService
             RefreshToken = newRefreshTokenString
         };
 
-        return new ServiceResult<TokensDto>(true,"Refresh Token used successfuly.",tokens);
+        return new ServiceResult<TokensDto>(true, "Refresh Token used successfuly.", tokens);
     }
+
+    public async Task<ServiceResult> VerifyEmailAsync(VerifyEmailDto dto)
+    {
+        var userVerificationFilter = Builders<UserVerificationEntity>.Filter.Eq(rt => rt.Token, dto.Token);
+
+        var userVerification = await _mongoDbService.GetUserVerificationAsync(userVerificationFilter);
+
+        if (userVerification is null)
+        {
+            return new ServiceResult(false, "User Verification Entity not found");
+        }
+
+        if (userVerification.Expiration < DateTime.UtcNow || userVerification.User.Email != dto.Email)
+        {
+            return new ServiceResult(false, "No Valid User Verification found");
+        }
+
+        var userFilter = Builders<UserEntity>.Filter.Eq(user => user.Id, new ObjectId(userVerification.UserId));
+
+        var updateUser = Builders<UserEntity>.Update
+            .Set(user => user.IsActive, true);
+
+         await _mongoDbService.UpdateUserAsync(userFilter, updateUser);
+
+        var deleteUserVerificationFilter = Builders<UserVerificationEntity>.Filter.Eq(uv => uv.Id, userVerification.Id);
+
+        await _mongoDbService.DeleteUserVerificationAsync(deleteUserVerificationFilter);
+
+        return new ServiceResult(true,"Account verified successfully.");
+    }
+
     private string GenerateJwtToken(UserEntity user)
     {
         var claims = new List<Claim>

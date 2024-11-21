@@ -24,14 +24,6 @@ public class UserController : ControllerBase
         return Ok(userDtos);
     }
 
-    [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
-    {
-        await _userService.CreateUserAsync(dto);
-
-        return Ok("User created successfully.");
-    }
-
     [HttpGet("user/{userId}")]
     public async Task<IActionResult> GetById([FromRoute] string userId)
     {
