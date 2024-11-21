@@ -10,11 +10,11 @@ public class UserEntity
     public ObjectId Id { get; set; }  // MongoDB'deki ObjectId türünde olacak
     public string Username { get; set; }
     public string Email { get; set; }
-    public byte[] PasswordHash { get; set; }
-    public byte[] PasswordSalt { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
     public string Role { get; set; } = "worker";
+    public byte[] PasswordHash { get; set; }
+    public byte[] PasswordSalt { get; set; }
+
     [BsonIgnore]
     public ICollection<TaskEntity> Tasks { get; set; } = new List<TaskEntity>();
 }

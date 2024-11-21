@@ -20,45 +20,11 @@ public class MongoDbService
         _usersCollection = _database.GetCollection<UserEntity>("users");
         _questionsCollection = _database.GetCollection<QuestionEntity>("questions");
 
-        // Veritabanı ve Koleksiyonların varlığını kontrol et
-        CreateDatabaseIfNotExists();
     }
 
     public IMongoCollection<TaskEntity> Tasks => _tasksCollection;
     public IMongoCollection<UserEntity> Users => _usersCollection;
     public IMongoCollection<QuestionEntity> Questions => _questionsCollection;
-
-    private void CreateDatabaseIfNotExists()
-    {
-        // Veritabanının var olup olmadığını kontrol et (MongoDB otomatik olarak oluşturur)
-        var databaseNames = _database.Client.ListDatabaseNames().ToList();
-        if (!databaseNames.Contains(_database.DatabaseNamespace.DatabaseName))
-        {
-            _database.Client.GetDatabase(_database.DatabaseNamespace.DatabaseName);
-        }
-
-        // Koleksiyonlar otomatik olarak oluşturulacaktır, ancak burada herhangi bir yapılandırma gerekiyorsa,
-        // koleksiyonlar üzerinde bazı işlemler yapabiliriz.
-        // Örneğin, 'tasks' ve 'users' koleksiyonlarının oluşturulması
-        var taskCollectionExists = _database.ListCollectionNames().ToList().Contains("tasks");
-        if (!taskCollectionExists)
-        {
-            // Burada opsiyonel olarak koleksiyon yapılandırmaları yapabilirsiniz.
-            _database.CreateCollection("tasks");
-        }
-
-        var userCollectionExists = _database.ListCollectionNames().ToList().Contains("users");
-        if (!userCollectionExists)
-        {
-            _database.CreateCollection("users");
-        }
-
-        var questionCollectionExists = _database.ListCollectionNames().ToList().Contains("questions");
-        if (!questionCollectionExists)
-        {
-            _database.CreateCollection("questions");
-        }
-    }
 
     public async Task CreateTaskAsync(TaskEntity task)
     {

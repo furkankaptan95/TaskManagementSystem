@@ -45,23 +45,6 @@ public class UserService
 
         return dto;
     }
-
-    public async Task CreateUserAsync(RegisterDto dto)
-    {
-        var userEntity = new UserEntity();
-
-        byte[] passwordHash, passwordSalt;
-
-        HashingHelper.CreatePasswordHash(dto.Password, out passwordHash, out passwordSalt);
-
-        userEntity.Email = dto.Email;
-        userEntity.Username = dto.Username;
-        userEntity.PasswordHash = passwordHash;
-        userEntity.PasswordSalt = passwordSalt;
-
-        await _mongoDbService.CreateUserAsync(userEntity);
-    }
-
     public async Task<ServiceResult> UpdateUserAsync(UpdateUserDto dto)
     {
         var existingUser = await _mongoDbService.GetUserByIdAsync(dto.Id);
