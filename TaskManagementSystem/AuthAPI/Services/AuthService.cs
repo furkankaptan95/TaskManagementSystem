@@ -273,6 +273,30 @@ public class AuthService
         return new ServiceResult(true, "Password changed successfully.");
     }
 
+    public async Task<ServiceResult> NewVerificationAsync(NewVerificationMailDto dto)
+    {
+        var userFilter = Builders<UserEntity>.Filter.Eq(u => u.Email, dto.Email);
+        var user = await _mongoDbService.GetUserAsync(userFilter);
+
+        if (user is null)
+        {
+            return new ServiceResult(false, "User not found.");
+        }
+
+        var token = Guid.NewGuid().ToString().Substring(0, 6);
+
+        var newVerification = new UserVerificationEntity
+        {
+            UserId = user.Id.ToString(),
+            Token = token,
+        };
+
+        await _mongoDbService.CreateUserVerificationAsync(newVerification);
+
+        return new ServiceResult(true, "Mail sended successfully. Please visit your Email to verif your account.");
+
+    }
+
     private string GenerateJwtToken(UserEntity user)
     {
         var claims = new List<Claim>
