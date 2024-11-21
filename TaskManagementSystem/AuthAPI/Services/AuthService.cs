@@ -61,6 +61,35 @@ public class AuthService
         return new ServiceResult<TokensDto>(true,"Logged in successfully.",tokensDto);
     }
 
+    public async Task<ServiceResult<TokensDto>> RefreshTokenAsync(string token)
+    {
+        var refreshToken = await _mongoDbService.GetRefreshTokenAsync(token);
+
+        if (refreshToken == null)
+        {
+            return new ServiceResult<TokensDto>(false, "No valid token exists.");
+        }
+
+        var newJwt = GenerateJwtToken(refreshToken.User);
+        var newRefreshTokenString = GenerateRefreshToken();
+
+        var newRefreshToken = new RefreshTokenEntity
+        {
+            Token = newRefreshTokenString,
+            UserId = refreshToken.UserId,
+            ExpireDate = DateTime.UtcNow.AddDays(7),
+        };
+
+        await _mongoDbService.CreateRefreshTokenAsync(newRefreshToken);
+
+        var tokens = new TokensDto
+        {
+            JwtToken = newJwt,
+            RefreshToken = newRefreshTokenString
+        };
+
+        return new ServiceResult<TokensDto>(true,"Refresh Token used successfuly.",tokens);
+    }
     private string GenerateJwtToken(UserEntity user)
     {
         var claims = new List<Claim>

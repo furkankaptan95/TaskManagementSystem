@@ -26,7 +26,38 @@ public class MongoDbService
     {
         await _refreshTokensCollection.InsertOneAsync(token);
     }
+    public async Task<RefreshTokenEntity> GetRefreshTokenAsync(string token)
+    {
+        var filter = Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.Token, token) &
+              Builders<RefreshTokenEntity>.Filter.Gt(rt => rt.ExpireDate, DateTime.UtcNow) &
+              Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.IsRevoked, false) &
+              Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.IsUsed, false);
 
+        var refreshTokenEntity = await _refreshTokensCollection
+            .Find(filter)
+            .FirstOrDefaultAsync();
+
+        if(refreshTokenEntity is null)
+        {
+            return null;
+        }
+
+        var user = await GetUserByIdAsync(refreshTokenEntity.UserId);
+        refreshTokenEntity.User = user;
+
+        var updateFilter = Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.Token, token);
+        var update = Builders<RefreshTokenEntity>.Update.Set(rt => rt.IsUsed, true);
+
+        await _refreshTokensCollection.UpdateOneAsync(updateFilter, update);
+
+        return refreshTokenEntity;
+    }
+
+    public async Task<UserEntity> GetUserByIdAsync(string id)
+    {
+        var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, new ObjectId(id));
+        return await _usersCollection.Find(filter).FirstOrDefaultAsync();
+    }
     // Read - Tüm kullanıcıları getirir
     public async Task<List<UserEntity>> GetAllUsersAsync()
     {
