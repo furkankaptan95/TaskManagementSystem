@@ -1,7 +1,7 @@
 ﻿using AuthAPI.DTOs;
 using AuthAPI.Entities;
+using AuthAPI.Enums;
 using IdentityModel;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -24,8 +24,29 @@ public class AuthService
         _configuration = configuration;
     }
 
-    public async Task<ServiceResult> RegisterAsync(RegisterDto dto)
+    public async Task<RegistrationResult> RegisterAsync(RegisterDto dto)
     {
+        var emailFilter = Builders<UserEntity>.Filter.Eq(user => user.Email, dto.Email);
+        var usernameFilter = Builders<UserEntity>.Filter.Eq(user => user.Username, dto.Username);
+
+        var isEmailAlreadyTaken = await _mongoDbService.GetUserAsync(emailFilter);
+        var isUsernameAlreadyTaken = await _mongoDbService.GetUserAsync(usernameFilter);
+
+        if (isEmailAlreadyTaken is not null && isUsernameAlreadyTaken is not null)
+        {
+            return new RegistrationResult(false, "Email and Username already taken!", RegistrationError.BothTaken);
+        }
+
+        else if (isEmailAlreadyTaken is null && isUsernameAlreadyTaken is not null)
+        {
+            return new RegistrationResult(false, "Username already taken!", RegistrationError.UsernameTaken);
+        }
+
+        else if (isEmailAlreadyTaken is not null && isUsernameAlreadyTaken is null)
+        {
+            return new RegistrationResult(false, "Email already taken!", RegistrationError.EmailTaken);
+        }
+
         var userEntity = new UserEntity();
 
         byte[] passwordHash, passwordSalt;
@@ -49,7 +70,7 @@ public class AuthService
 
         await _mongoDbService.CreateUserVerificationAsync(userVerification);
 
-        return new ServiceResult(true, "Registered successfully. Please visit your Email to verif your account.");
+        return new RegistrationResult(true, "Registered successfully. Please visit your Email to verif your account.", RegistrationError.None);
     }
 
     public async Task<ServiceResult<TokensDto>> LoginAsync(LoginDto dto)

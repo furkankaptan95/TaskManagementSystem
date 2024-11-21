@@ -19,6 +19,11 @@ public class AuthController : ControllerBase
     {
         var result = await _authService.RegisterAsync(dto);
 
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Message);
+        }
+
         return Ok(result.Message);
     }
 
