@@ -223,7 +223,21 @@ public class AuthService
         return new ServiceResult(true, "Please check your Email to renew your password.");
     }
 
-    public async Task<ServiceResult> RenewPasswordVerifyEmailAsync(RenewPasswordDto dto)
+    public async Task<ServiceResult<string>> RenewPasswordVerifyEmailAsync(RenewPasswordDto dto)
+    {
+        var userVerificationFilter = Builders<UserVerificationEntity>.Filter.Eq(uv => uv.Token, dto.Token);
+
+        var userVerification = await _mongoDbService.GetUserVerificationAsync(userVerificationFilter);
+
+        if (userVerification == null || userVerification.Expiration < DateTime.UtcNow || userVerification.User.Email != dto.Email)
+        {
+            return new ServiceResult<string>(false, "No valid User Verification.");
+        }
+
+        return new ServiceResult<string>(true, "Successfully verified. You can change password.",dto.Token);
+    }
+
+    public async Task<ServiceResult> NewPasswordAsync(NewPasswordDto dto)
     {
         var userVerificationFilter = Builders<UserVerificationEntity>.Filter.Eq(uv => uv.Token, dto.Token);
 
@@ -234,11 +248,29 @@ public class AuthService
             return new ServiceResult(false, "No valid User Verification.");
         }
 
+        var userFilter = Builders<UserEntity>.Filter.Eq(u => u.Email, dto.Email); 
+        var user = await _mongoDbService.GetUserAsync(userFilter);
+
+        if (user is null)
+        {
+            return new ServiceResult(false, "User not found.");
+        }
+
+        byte[] passwordHash, passwordSalt;
+
+        HashingHelper.CreatePasswordHash(dto.Password, out passwordHash, out passwordSalt);
+
+        var update = Builders<UserEntity>.Update
+        .Set(u => u.PasswordHash, passwordHash)
+        .Set(u => u.PasswordSalt, passwordSalt);
+
+        await _mongoDbService.UpdateUserAsync(userFilter, update);
+
         var deleteUserVerificationFilter = Builders<UserVerificationEntity>.Filter.Eq(uv => uv.Id, userVerification.Id);
 
         await _mongoDbService.DeleteUserVerificationAsync(deleteUserVerificationFilter);
 
-        return new ServiceResult(true, "Successfully verified. You can change password.");
+        return new ServiceResult(true, "Password changed successfully.");
     }
 
     private string GenerateJwtToken(UserEntity user)
