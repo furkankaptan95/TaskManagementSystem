@@ -40,22 +40,22 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("refresh-token/{token}")]
-    public async Task<IActionResult> RefreshToken([FromRoute] string token)
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] string token)
     {
-            if (string.IsNullOrEmpty(token))
-            {
-                return BadRequest("Token null or empty.");
-            }
+        if (string.IsNullOrEmpty(token))
+        {
+            return BadRequest("Token cannot be null or empty.");
+        }
 
-            var result = await _authService.RefreshTokenAsync(token);
+        var result = await _authService.RefreshTokenAsync(token);
 
-            if (!result.IsSuccess)
-            {
-                return NotFound(result.Message);
-            }
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Message);
+        }
 
-            return Ok(result);
+        return Ok(result);
     }
 
     [HttpPost("verify-email")]
@@ -74,6 +74,11 @@ public class AuthController : ControllerBase
     [HttpPost("validate-token")]
     public IActionResult ValidateToken([FromBody] string token)
     {
+        if (string.IsNullOrEmpty(token))
+        {
+            return BadRequest("Token cannot be null or empty.");
+        }
+
         var result = _authService.ValidateToken(token);
 
         if (!result.IsSuccess)
@@ -104,10 +109,10 @@ public class AuthController : ControllerBase
 
         if (!result.IsSuccess)
         {
-            return BadRequest(result.Message);
+            return BadRequest(result);
         }
 
-        return Ok(result.Message);
+        return Ok(result);
     }
 
     [HttpPost("new-password")]
@@ -141,7 +146,7 @@ public class AuthController : ControllerBase
     {
         if (string.IsNullOrEmpty(token))
         {
-            return BadRequest("Token can not be null or empty.");
+            return BadRequest("Token cannot be null or empty.");
         }
 
         var result = await _authService.RevokeTokenAsync(token);

@@ -55,6 +55,8 @@ public class AuthService
 
         userEntity.Email = dto.Email;
         userEntity.Username = dto.Username;
+        userEntity.Firstname = dto.Firstname;
+        userEntity.Lastname = dto.Lastname;
         userEntity.PasswordHash = passwordHash;
         userEntity.PasswordSalt = passwordSalt;
 
@@ -75,11 +77,17 @@ public class AuthService
 
     public async Task<ServiceResult<TokensDto>> LoginAsync(LoginDto dto)
     {
-        var user = await _mongoDbService.GetUserWithTokensAsync(dto.Email);
+        var userFilter = Builders<UserEntity>.Filter.Eq(user => user.Email, dto.Email);
+        var user = await _mongoDbService.GetUserAsync(userFilter);
 
         if (user == null)
         {
             return new ServiceResult<TokensDto>(false, "User not found.");
+        }
+
+        if(user.IsActive is false)
+        {
+            return new ServiceResult<TokensDto>(false,"Please visit your email and verify your account to log in.");
         }
 
         if (!HashingHelper.VerifyPasswordHash(dto.Password, user.PasswordHash, user.PasswordSalt))
@@ -87,7 +95,10 @@ public class AuthService
             return new ServiceResult<TokensDto>(false, "Wrong password.");
         }
 
-        await _mongoDbService.UpdateAllTokensToRevokedAsync(user.Id.ToString());
+        var filter = Builders<RefreshTokenEntity>.Filter.Eq(token => token.UserId, user.Id.ToString());
+        var update = Builders<RefreshTokenEntity>.Update.Set(token => token.IsRevoked, true);
+
+        await _mongoDbService.UpdateManyRefreshTokensAsync(filter, update);
 
         string jwt = GenerateJwtToken(user);
 
@@ -113,12 +124,24 @@ public class AuthService
 
     public async Task<ServiceResult<TokensDto>> RefreshTokenAsync(string token)
     {
-        var refreshToken = await _mongoDbService.GetRefreshTokenAsync(token);
+        var filterBuilder = Builders<RefreshTokenEntity>.Filter;
+        var filter = filterBuilder.Eq(rt => rt.Token, token) &
+                     filterBuilder.Gt(rt => rt.ExpireDate, DateTime.UtcNow) &
+                     filterBuilder.Eq(rt => rt.IsRevoked, false) &
+                     filterBuilder.Eq(rt => rt.IsUsed, false);
+
+        var refreshToken = await _mongoDbService.GetRefreshTokenAsync(filter);
 
         if (refreshToken == null)
         {
             return new ServiceResult<TokensDto>(false, "No valid token exists.");
         }
+
+        var updateFilter = Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.Token, refreshToken.Token);
+
+        var update = Builders<RefreshTokenEntity>.Update.Set(rt => rt.IsUsed, true);
+
+        await _mongoDbService.UpdateSingleRefreshTokenAsync(updateFilter, update);
 
         var newJwt = GenerateJwtToken(refreshToken.User);
         var newRefreshTokenString = GenerateRefreshToken();
@@ -149,12 +172,12 @@ public class AuthService
 
         if (userVerification is null)
         {
-            return new ServiceResult(false, "User Verification Entity not found");
+            return new ServiceResult(false, "User Verification not found");
         }
 
         if (userVerification.Expiration < DateTime.UtcNow || userVerification.User.Email != dto.Email)
         {
-            return new ServiceResult(false, "No Valid User Verification found");
+            return new ServiceResult(false, "No valid User Verification found");
         }
 
         var userFilter = Builders<UserEntity>.Filter.Eq(user => user.Id, new ObjectId(userVerification.UserId));
@@ -168,7 +191,7 @@ public class AuthService
 
         await _mongoDbService.DeleteUserVerificationAsync(deleteUserVerificationFilter);
 
-        return new ServiceResult(true, "Account verified successfully.");
+        return new ServiceResult(true, "Account verified successfully. Now you can log in.");
     }
 
     public ServiceResult ValidateToken(string token)
@@ -294,13 +317,12 @@ public class AuthService
         await _mongoDbService.CreateUserVerificationAsync(newVerification);
 
         return new ServiceResult(true, "Mail sended successfully. Please visit your Email to verif your account.");
-
     }
 
     public async Task<ServiceResult> RevokeTokenAsync(string token)
     {
         var refreshTokenFilter = Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.Token, token);
-        var refreshToken = await _mongoDbService.GetRefreshTokenWithFilterAsync(refreshTokenFilter);
+        var refreshToken = await _mongoDbService.GetRefreshTokenAsync(refreshTokenFilter);
 
         if (refreshToken is null)
         {
@@ -309,10 +331,11 @@ public class AuthService
 
         var update = Builders<RefreshTokenEntity>.Update.Set(rt => rt.IsRevoked, true);
 
-        await _mongoDbService.UpdateSingleRefreshTokenAsnc(refreshTokenFilter, update);
+        await _mongoDbService.UpdateSingleRefreshTokenAsync(refreshTokenFilter, update);
 
         return new ServiceResult(true, "Token revoked successfully.");
     }
+
     private string GenerateJwtToken(UserEntity user)
     {
         var claims = new List<Claim>

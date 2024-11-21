@@ -1,5 +1,4 @@
-﻿using AuthAPI.DTOs;
-using AuthAPI.Entities;
+﻿using AuthAPI.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -15,7 +14,6 @@ public class MongoDbService
         var client = new MongoClient(config.GetValue<string>("MongoDbSettings:ConnectionString"));
         _database = client.GetDatabase(config.GetValue<string>("MongoDbSettings:DatabaseName"));
 
-        // Koleksiyon
         _usersCollection = _database.GetCollection<UserEntity>("users");
         _refreshTokensCollection = _database.GetCollection<RefreshTokenEntity>("refreshTokens");
         _userVerificationsCollection = _database.GetCollection<UserVerificationEntity>("userVerifications");
@@ -23,12 +21,16 @@ public class MongoDbService
     }
 
     public IMongoCollection<UserEntity> Users => _usersCollection;
+
     public IMongoCollection<RefreshTokenEntity> RefreshTokens => _refreshTokensCollection;
+
     public IMongoCollection<UserVerificationEntity> UserVerficications => _userVerificationsCollection;
+
     public async Task CreateUserAsync(UserEntity user)
     {
         await _usersCollection.InsertOneAsync(user);
     }
+
     public async Task CreateRefreshTokenAsync(RefreshTokenEntity token)
     {
         await _refreshTokensCollection.InsertOneAsync(token);
@@ -39,22 +41,8 @@ public class MongoDbService
         await _userVerificationsCollection.InsertOneAsync(entity);
     }
 
-    public async Task<RefreshTokenEntity> GetRefreshTokenWithFilterAsync(FilterDefinition<RefreshTokenEntity> filter)
+    public async Task<RefreshTokenEntity> GetRefreshTokenAsync(FilterDefinition<RefreshTokenEntity> filter)
     {
-        var refreshTokenEntity = await _refreshTokensCollection
-            .Find(filter)
-            .FirstOrDefaultAsync();
-
-        return refreshTokenEntity;
-    }
-
-    public async Task<RefreshTokenEntity> GetRefreshTokenAsync(string token)
-    {
-        var filter = Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.Token, token) &
-              Builders<RefreshTokenEntity>.Filter.Gt(rt => rt.ExpireDate, DateTime.UtcNow) &
-              Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.IsRevoked, false) &
-              Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.IsUsed, false);
-
         var refreshTokenEntity = await _refreshTokensCollection
             .Find(filter)
             .FirstOrDefaultAsync();
@@ -68,11 +56,6 @@ public class MongoDbService
 
         var user = await GetUserAsync(userFilter);
         refreshTokenEntity.User = user;
-
-        var updateFilter = Builders<RefreshTokenEntity>.Filter.Eq(rt => rt.Token, token);
-        var update = Builders<RefreshTokenEntity>.Update.Set(rt => rt.IsUsed, true);
-
-        await _refreshTokensCollection.UpdateOneAsync(updateFilter, update);
 
         return refreshTokenEntity;
     }
@@ -103,57 +86,15 @@ public class MongoDbService
     {
         return await _usersCollection.Find(filter).FirstOrDefaultAsync();
     }
-    // Read - Tüm kullanıcıları getirir
-    public async Task<List<UserEntity>> GetAllUsersAsync()
+
+    public async Task UpdateManyRefreshTokensAsync(FilterDefinition<RefreshTokenEntity> filter, UpdateDefinition<RefreshTokenEntity> update)
     {
-        return await _usersCollection.Find(user => true).ToListAsync();
+        await _refreshTokensCollection.UpdateManyAsync(filter, update);
     }
 
-    public async Task<List<RefreshTokenEntity>> GetAllUserTokensAsync(string userId)
+    public async Task UpdateSingleRefreshTokenAsync(FilterDefinition<RefreshTokenEntity> filter, UpdateDefinition<RefreshTokenEntity> update)
     {
-        return await _refreshTokensCollection.Find(token => token.UserId == userId).ToListAsync();
-    }
-
-    public async Task<UserEntity> GetUserWithTokensAsync(string email)
-    {
-        var filter = Builders<UserEntity>.Filter.Eq(u => u.Email, email);
-        var user = await _usersCollection.Find(filter).FirstOrDefaultAsync();
-
-        if (user is not null)
-        {
-
-            user.RefreshTokens = await GetAllUserTokensAsync(user.Id.ToString());
-
-        }
-
-        return user;
-    }
-
-    public async Task UpdateAllTokensToRevokedAsync(string userId)
-    {
-        // Güncelleme filtresi: userId eşleşenler
-        var filter = Builders<RefreshTokenEntity>.Filter.Eq(token => token.UserId, userId);
-
-        // Güncelleme işlemi: IsRevoked alanını false yap
-        var update = Builders<RefreshTokenEntity>.Update.Set(token => token.IsRevoked, true);
-
-        // Güncelleme işlemini uygula
-        var result = await _refreshTokensCollection.UpdateManyAsync(filter, update);
-
-    }
-
-    public async Task UpdateSingleRefreshTokenAsnc(FilterDefinition<RefreshTokenEntity> filter, UpdateDefinition<RefreshTokenEntity> update)
-    {
-       
-        var result = await _refreshTokensCollection.UpdateOneAsync(filter, update);
-
-    }
-
-    // Delete - Kullanıcıyı siler
-    public async Task DeleteUserAsync(string id)
-    {
-        var filter = Builders<UserEntity>.Filter.Eq(u => u.Id, new ObjectId(id));
-        await _usersCollection.DeleteOneAsync(filter);
+       await _refreshTokensCollection.UpdateOneAsync(filter, update);
     }
 
     public async Task DeleteUserVerificationAsync(FilterDefinition<UserVerificationEntity> filter)
