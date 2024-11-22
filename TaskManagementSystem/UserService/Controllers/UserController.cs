@@ -10,7 +10,6 @@ namespace UserAPI.Controllers;
 public class UserController : ControllerBase
 {
     private readonly UserService _userService;
-
     public UserController(UserService userService)
     {
         _userService = userService;
@@ -24,7 +23,7 @@ public class UserController : ControllerBase
         return Ok(userDtos);
     }
 
-    [HttpGet("user/{userId}")]
+    [HttpGet("{userId}")]
     public async Task<IActionResult> GetById([FromRoute] string userId)
     {
         if (!ObjectId.TryParse(userId, out _))
@@ -32,14 +31,14 @@ public class UserController : ControllerBase
             return BadRequest("Invalid UserId format.");
         }
 
-        var user = await _userService.GetUserByIdAsync(userId);
+        var result = await _userService.GetUserByIdAsync(userId);
 
-        if(user is null)
+        if(!result.IsSuccess)
         {
-            return NotFound("User not found.");
+            return NotFound(result.Message);
         }
 
-        return Ok(user);
+        return Ok(result.Data);
     }
 
     [HttpPut("update")]
@@ -60,6 +59,24 @@ public class UserController : ControllerBase
         return Ok(result.Message);
     }
 
+    [HttpPut("update-role")]
+    public async Task<IActionResult> UpdateUserRole([FromBody] UpdateRoleDto dto)
+    {
+        if (!ObjectId.TryParse(dto.UserId, out _))
+        {
+            return BadRequest("Invalid UserId format.");
+        }
+
+        var result = await _userService.UpdateUserRoleAsync(dto);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Message);
+        }
+
+        return Ok(result.Message);
+    }
+
     [HttpDelete("delete/{userId}")]
     public async Task<IActionResult> Delete([FromRoute] string userId)
     {
@@ -70,19 +87,6 @@ public class UserController : ControllerBase
 
         var result = await _userService.DeleteUserAsync(userId);
         
-        if (!result.IsSuccess)
-        {
-            return NotFound(result.Message);
-        }
-
-        return Ok(result.Message);
-    }
-
-    [HttpPut("change-password")]
-    public async Task<IActionResult> ChangePassword([FromBody] NewPasswordDto dto)
-    {
-        var result = await _userService.ChangePasswordAsync(dto);
-
         if (!result.IsSuccess)
         {
             return NotFound(result.Message);
