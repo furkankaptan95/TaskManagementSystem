@@ -1,6 +1,5 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
-using TaskAPI.Entities;
 
 namespace UserAPI.Entities;
 public class UserEntity
@@ -14,7 +13,4 @@ public class UserEntity
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public string Role { get; set; }
-
-    [BsonIgnore]
-    public ICollection<TaskEntity> Tasks { get; set; } = new List<TaskEntity>();
 }

@@ -28,6 +28,7 @@ public class TaskService
             CreatedAt = item.CreatedAt,
             EndDate = item.EndDate,
             UserId = item.UserId,
+            Username = item.User?.Username,
         })
         .ToList();
 

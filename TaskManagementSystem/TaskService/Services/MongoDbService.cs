@@ -38,9 +38,25 @@ public class MongoDbService
 
     public async Task<List<TaskEntity>> GetAllTasksAsync()
     {
-        return await _tasksCollection.Find(task => true).ToListAsync();
+        var tasks = await _tasksCollection.Find(task => true).ToListAsync();
+
+        foreach (var task in tasks)
+        {
+            if(task.UserId is not null)
+            {
+                var userFilter = Builders<UserEntity>.Filter.Eq(user => user.Id , new ObjectId(task.UserId));
+                var user = await GetUserAsync(userFilter);
+                task.User = user;
+            }
+        }
+
+        return tasks;
     }
 
+    public async Task<UserEntity> GetUserAsync(FilterDefinition<UserEntity> filter)
+    {
+        return await _usersCollection.Find(filter).FirstOrDefaultAsync();
+    }
     public async Task<TaskEntity> GetTaskByIdAsync(string id)  // ID olarak string (ObjectId) alıyoruz
     {
         // Görevi bul
