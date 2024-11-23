@@ -86,15 +86,16 @@ public class TaskService
         return new ServiceResult<SingleTaskDto>(true,null,dto);
     }
 
-    public async Task AddTaskAsync(AddTaskDto dto)
+    public async Task<ServiceResult> AddTaskAsync(AddTaskDto dto)
     {
-        if(!string.IsNullOrEmpty(dto.UserId))
+        if(dto.UserId is not null)
         {
-            var user = await _mongoDbService.Users.Find(u => u.Id == new ObjectId(dto.UserId)).FirstOrDefaultAsync();
+            var userFilter = Builders<UserEntity>.Filter.Eq(u => u.Id ,new ObjectId(dto.UserId));
+            var user = await _mongoDbService.GetUserAsync(userFilter);
 
-            if (user == null)
+            if (user is null)
             {
-                throw new Exception("User not found");  // Kullanıcı bulunamazsa hata fırlat
+                return new ServiceResult(false, "User not found");
             }
         }
 
@@ -106,7 +107,14 @@ public class TaskService
             UserId = dto.UserId,
         };
 
+        if(entity.UserId is not null)
+        {
+            entity.AssignedAt = DateTime.UtcNow;
+        }
+
         await _mongoDbService.CreateTaskAsync(entity);
+
+        return new ServiceResult(true, "Task created successfully.");
     }
 
     public async Task<ServiceResult> UpdateTaskAsync(UpdateTaskDto dto)  // ID'yi string (ObjectId) olarak alıyoruz

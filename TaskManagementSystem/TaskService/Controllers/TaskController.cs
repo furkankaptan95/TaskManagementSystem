@@ -45,9 +45,14 @@ public class TaskController : ControllerBase
     [HttpPost("add")]
     public async Task<IActionResult> Add([FromBody] AddTaskDto addDto)
     {
-        await _taskService.AddTaskAsync(addDto);
+        var result = await _taskService.AddTaskAsync(addDto);
 
-        return Ok("Task added successfully.");
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Message);
+        }
+
+        return Ok(result.Message);
     }
 
     [HttpPut("update")]
