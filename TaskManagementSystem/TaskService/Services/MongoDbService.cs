@@ -57,10 +57,18 @@ public class MongoDbService
     {
         return await _usersCollection.Find(filter).FirstOrDefaultAsync();
     }
-    public async Task<TaskEntity> GetTaskByIdAsync(string id)  // ID olarak string (ObjectId) alıyoruz
+    public async Task<QuestionEntity> GetQuestionAsync(FilterDefinition<QuestionEntity> filter)
+    {
+        return await _questionsCollection.Find(filter).FirstOrDefaultAsync();
+    }
+    public async Task<List<QuestionEntity>> GetTasksQuestionsAsync(FilterDefinition<QuestionEntity> filter)
+    {
+        return await _questionsCollection.Find(filter).ToListAsync();
+    }
+    public async Task<TaskEntity> GetTaskAsync(FilterDefinition<TaskEntity> filter)
     {
         // Görevi bul
-        var task = await _tasksCollection.Find(task => task.Id == new ObjectId(id)).FirstOrDefaultAsync();
+        var task = await _tasksCollection.Find(filter).FirstOrDefaultAsync();
 
         if (task != null)
         {

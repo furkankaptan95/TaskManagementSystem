@@ -13,7 +13,6 @@ public class TaskEntity
     public DateTime? UpdatedAt { get; set; }
     public DateTime EndDate { get; set; }
     public DateTime? AssignedAt { get; set; }
-
     public string? UserId { get; set; }
 
     [BsonIgnore]
