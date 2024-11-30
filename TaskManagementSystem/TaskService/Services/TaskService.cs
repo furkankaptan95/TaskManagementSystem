@@ -28,45 +28,74 @@ public class TaskService
             CreatedAt = item.CreatedAt,
             EndDate = item.EndDate,
             UserId = item.UserId,
+            Username = item.User?.Username,
         })
         .ToList();
 
         return dtos;
     }
 
-    public async Task<SingleTaskDto> GetTaskByIdAsync(string id)  // ID'yi string (ObjectId) türüyle alıyoruz
+    public async Task<ServiceResult<SingleTaskDto>> GetTaskByIdAsync(string id)
     {
-        var task = await _mongoDbService.GetTaskByIdAsync(id);  // MongoDbService üzerinden görev bilgilerini al
+        var taskFilter = Builders<TaskEntity>.Filter.Eq(task => task.Id, new ObjectId(id));
+        var task = await _mongoDbService.GetTaskAsync(taskFilter);
 
         if(task is null)
         {
-            return null;
+            return new ServiceResult<SingleTaskDto>(false, "Task not found.");
         }
 
         var dto = new SingleTaskDto
         {
+            Id = id,
             Description = task.Description,
             Title = task.Title,
             IsCompleted = task.IsCompleted,
             CreatedAt = task.CreatedAt,
             EndDate = task.EndDate,
+            UpdatedAt = task.UpdatedAt,
+            AssignedAt = task.AssignedAt,
             UserId = task.UserId,
-            TaskUserName = task.User?.Username,
-            Id = id
+            UserName = task.User?.Username,
         };
 
-        return dto;
+        if(dto.UserName is null)
+        {
+           return new ServiceResult<SingleTaskDto>(true, "No questions on this task.", dto);
+        }
+
+        var questionFilter = Builders<QuestionEntity>.Filter.Eq(q => q.TaskId, id);
+        var questions = await _mongoDbService.GetTasksQuestionsAsync(questionFilter);
+
+        var questionDtos = questions
+            .Select(item => new QuestionDto
+            {
+                Id = item.Id.ToString(),
+                Content = item.Content,
+                Answer = item.Answer,
+                CreatedAt = item.CreatedAt,
+                AnsweredAt = item.CreatedAt,
+                TaskId = item.TaskId,
+                TaskTitle = task.Title,
+                UserId = item.UserId,
+                Username = dto.UserName
+            }).ToList();
+
+        dto.Questions = questionDtos;
+
+        return new ServiceResult<SingleTaskDto>(true,null,dto);
     }
 
-    public async Task AddTaskAsync(AddTaskDto dto)
+    public async Task<ServiceResult> AddTaskAsync(AddTaskDto dto)
     {
-        if(!string.IsNullOrEmpty(dto.UserId))
+        if(dto.UserId is not null)
         {
-            var user = await _mongoDbService.Users.Find(u => u.Id == new ObjectId(dto.UserId)).FirstOrDefaultAsync();
+            var userFilter = Builders<UserEntity>.Filter.Eq(u => u.Id ,new ObjectId(dto.UserId));
+            var user = await _mongoDbService.GetUserAsync(userFilter);
 
-            if (user == null)
+            if (user is null)
             {
-                throw new Exception("User not found");  // Kullanıcı bulunamazsa hata fırlat
+                return new ServiceResult(false, "User not found");
             }
         }
 
@@ -78,7 +107,14 @@ public class TaskService
             UserId = dto.UserId,
         };
 
+        if(entity.UserId is not null)
+        {
+            entity.AssignedAt = DateTime.UtcNow;
+        }
+
         await _mongoDbService.CreateTaskAsync(entity);
+
+        return new ServiceResult(true, "Task created successfully.");
     }
 
     public async Task<ServiceResult> UpdateTaskAsync(UpdateTaskDto dto)  // ID'yi string (ObjectId) olarak alıyoruz
@@ -88,7 +124,8 @@ public class TaskService
             return new ServiceResult(false, "Invalid TaskId Format");
         }
 
-        var existingTask = await _mongoDbService.GetTaskByIdAsync(dto.Id);  // Mevcut görevi al
+        var taskFilter = Builders<TaskEntity>.Filter.Eq(task => task.Id, new ObjectId(dto.Id));
+        var existingTask = await _mongoDbService.GetTaskAsync(taskFilter);  // Mevcut görevi al
 
         if (existingTask == null)
         {
@@ -122,14 +159,15 @@ public class TaskService
             IsCompleted = dto.IsCompleted,
         };
 
-        await _mongoDbService.UpdateTaskAsync(dto.Id, updatedTask);  // MongoDbService üzerinden görevi güncelle
+        await _mongoDbService.UpdateTaskAsync(dto.Id, updatedTask);
 
         return new ServiceResult(true, "Task updated successfuly.");
     }
 
-    public async Task<ServiceResult> ChangeStatusAsync(string id)  // ID'yi string (ObjectId) olarak alıyoruz
+    public async Task<ServiceResult> ChangeStatusAsync(string id)
     {
-        var existingTask = await _mongoDbService.GetTaskByIdAsync(id);  // Mevcut görevi al
+        var taskFilter = Builders<TaskEntity>.Filter.Eq(task => task.Id, new ObjectId(id));
+        var existingTask = await _mongoDbService.GetTaskAsync(taskFilter);
 
         if (existingTask == null)
         {
@@ -143,21 +181,22 @@ public class TaskService
         return new ServiceResult(true, "Task updated successfuly.");
     }
 
-    public async Task DeleteTaskAsync(string id)  // ID'yi string (ObjectId) olarak alıyoruz
+    public async Task DeleteTaskAsync(string id)
     {
-        var existingTask = await _mongoDbService.GetTaskByIdAsync(id);  // Mevcut görevi al
+        var taskFilter = Builders<TaskEntity>.Filter.Eq(task => task.Id, new ObjectId(id));
+        var existingTask = await _mongoDbService.GetTaskAsync(taskFilter);
 
         if (existingTask == null)
         {
             return;
         }
 
-        await _mongoDbService.DeleteTaskAsync(id);  // MongoDbService üzerinden görevi sil
+        await _mongoDbService.DeleteTaskAsync(id);
     }
 
-    public async Task<List<AllTasksDto>> GetTasksByUserIdAsync(string userId)  // UserId'yi string (ObjectId) olarak alıyoruz
+    public async Task<List<AllTasksDto>> GetTasksByUserIdAsync(string userId)
     {
-        var tasks = await _mongoDbService.GetAllTasksAsync();  // MongoDbService üzerinden tüm görevleri al
+        var tasks = await _mongoDbService.GetAllTasksAsync();
         var userTasks = tasks.Where(task => task.UserId == userId).ToList();
 
         var dtos = userTasks
@@ -238,8 +277,8 @@ public class TaskService
 
     public async Task<ServiceResult> AssignTaskToUserAsync(AssignTaskDto dto)
     {
-
-        var existingTask = await _mongoDbService.GetTaskByIdAsync(dto.TaskId);  // Mevcut görevi al
+        var taskFilter = Builders<TaskEntity>.Filter.Eq(task => task.Id, new ObjectId(dto.TaskId));
+        var existingTask = await _mongoDbService.GetTaskAsync(taskFilter);  // Mevcut görevi al
 
         existingTask.UserId = dto.UserId;
 

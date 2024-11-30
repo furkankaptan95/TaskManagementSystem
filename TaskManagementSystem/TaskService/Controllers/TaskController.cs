@@ -24,25 +24,35 @@ public class TaskController : ControllerBase
         return Ok(taskDtos);
     }
 
-    [HttpGet("task/{taskId}")]
-    public async Task<IActionResult> GetDetails([FromRoute] string taskId)
+    [HttpGet("{taskId}")]
+    public async Task<IActionResult> GetById([FromRoute] string taskId)
     {
         if (!ObjectId.TryParse(taskId, out _))
         {
-            return BadRequest("Invalid ID format.");
+            return BadRequest("Invalid Task ID format.");
         }
 
-        var dto = await _taskService.GetTaskByIdAsync(taskId);
+        var result = await _taskService.GetTaskByIdAsync(taskId);
 
-        return Ok(dto);
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Message);
+        }
+
+        return Ok(result);
     }
 
     [HttpPost("add")]
     public async Task<IActionResult> Add([FromBody] AddTaskDto addDto)
     {
-        await _taskService.AddTaskAsync(addDto);
+        var result = await _taskService.AddTaskAsync(addDto);
 
-        return Ok("Task added successfully.");
+        if (!result.IsSuccess)
+        {
+            return NotFound(result.Message);
+        }
+
+        return Ok(result.Message);
     }
 
     [HttpPut("update")]

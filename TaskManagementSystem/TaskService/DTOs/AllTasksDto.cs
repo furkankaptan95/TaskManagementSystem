@@ -8,4 +8,5 @@ public class AllTasksDto
     public DateTime CreatedAt { get; set; }
     public DateTime EndDate { get; set; }
     public string? UserId { get; set; }
+    public string? Username { get; set; }
 }

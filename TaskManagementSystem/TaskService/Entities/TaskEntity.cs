@@ -4,19 +4,18 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace TaskAPI.Entities;
 public class TaskEntity
 {
-    [BsonId]  // MongoDB'nin otomatik oluşturduğu _id alanını işaret ederiz
-    public ObjectId Id { get; set; }  // MongoDB'deki ObjectId türünde olacak
+    [BsonId]
+    public ObjectId Id { get; set; }
     public string Title { get; set; }
     public string Description { get; set; }
     public bool IsCompleted { get; set; } = false;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
     public DateTime EndDate { get; set; }
+    public DateTime? AssignedAt { get; set; }
+    public string? UserId { get; set; }
 
-    // MongoDB'deki UserId ObjectId türünde olacak
-    [BsonRepresentation(BsonType.ObjectId)]  // ObjectId türüne dönüştürme
-    public string? UserId { get; set; }  // UserId'yi ObjectId türünde tutuyoruz
-
-    [BsonIgnore]  // MongoDB veritabanına kaydedilmez
+    [BsonIgnore]
     public UserEntity? User { get; set; }
 
     [BsonIgnore]
