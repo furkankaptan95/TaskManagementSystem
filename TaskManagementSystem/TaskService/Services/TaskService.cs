@@ -29,6 +29,7 @@ public class TaskService
             EndDate = item.EndDate,
             UserId = item.UserId,
             Username = item.User?.Username,
+            AssignedAt = item.AssignedAt,
         })
         .ToList();
 
