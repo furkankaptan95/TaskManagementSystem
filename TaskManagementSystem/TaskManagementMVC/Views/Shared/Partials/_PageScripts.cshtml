@@ -11,3 +11,24 @@
 
 <!-- Template Javascript -->
 <script src="~/js/main.js"></script>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Hem success hem de error alert'lerini seç
+        var alerts = document.querySelectorAll('.custom-alert-success, .custom-alert-error');
+
+        alerts.forEach(function (alert) {
+            if (alert) {
+                setTimeout(function () {
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(function () {
+                        alert.remove();
+                    }, 500); // Görsel olarak kaybolduktan sonra tamamen kaldır
+                }, 5000); // 5 saniye sonra kaybolmaya başla
+            }
+        });
+    });
+
+</script>

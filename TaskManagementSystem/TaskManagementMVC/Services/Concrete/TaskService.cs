@@ -10,8 +10,20 @@ public class TaskService : ITaskService
         _factory = factory;
     }
     private HttpClient TaskApiClient => _factory.CreateClient("taskApi");
+    private HttpClient UserApiClient => _factory.CreateClient("userApi");
 
-    public async Task<ServiceResult<List<AllTasksDto>>> GetAllAsync()
+    public async Task<ServiceResult> AddAsync(AddTaskDto dto)
+    {
+        var apiResponse = await TaskApiClient.PostAsJsonAsync("add",dto);
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true,"Yeni Görev başarıyla oluşturuldu.");
+        }
+
+        return new ServiceResult(false, "Görevi atamak istediğiniz kullanıcı bulunamadığı için görev oluşturulamadı!..");
+    }
+    public async Task<ServiceResult<List<AllTasksDto>>> GetAllTasksAsync()
     {
         var apiResponse = await TaskApiClient.GetAsync("all");
 
@@ -28,5 +40,24 @@ public class TaskService : ITaskService
         }
 
         return new ServiceResult<List<AllTasksDto>>(false);
+    }
+
+    public async Task<ServiceResult<List<AllUsersDto>>> GetAllUsersAsync()
+    {
+        var userApiResponse = await UserApiClient.GetAsync("all");
+
+        if (userApiResponse.IsSuccessStatusCode)
+        {
+            var result = await userApiResponse.Content.ReadFromJsonAsync<List<AllUsersDto>>();
+
+            if (result is null)
+            {
+                return new ServiceResult<List<AllUsersDto>>(false);
+            }
+
+            return new ServiceResult<List<AllUsersDto>>(true, null, result);
+        }
+
+        return new ServiceResult<List<AllUsersDto>>(false);
     }
 }
