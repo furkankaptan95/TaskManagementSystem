@@ -39,7 +39,7 @@ public class TaskController : ControllerBase
             return NotFound(result.Message);
         }
 
-        return Ok(result);
+        return Ok(result.Data);
     }
 
     [HttpPost("add")]

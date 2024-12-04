@@ -77,4 +77,12 @@ public class TaskController : Controller
         ViewData["success"] = result.Message;
         return View();
     }
+
+    [HttpGet("{taskId}")]
+    public async Task<IActionResult> TaskDetails([FromRoute] string taskId)
+    {
+        var result = await _taskService.GetSingleTaskAsync(taskId);
+
+        return View(result.Data);
+    }
 }

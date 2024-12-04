@@ -45,7 +45,8 @@
                         {
                             <tr>
                                 <td>@(string.IsNullOrEmpty(item.Username) ? "Henüz atanmadı" : item.Username)</td>
-                                <td>@item.Title</td>
+                                <td><a href="@Url.Action("TaskDetails", "Task", new { taskId = item.Id })">@item.Title</a></td>
+
                                 <td>@item.Description</td>
                                 <td>@(item.IsCompleted ? "Tamamlandı" : "Tamamlanmadı")</td>
                                 <td>@item.CreatedAt.ToString("dd MMMM yyyy")</td>

@@ -6,4 +6,5 @@ public interface ITaskService
     Task<ServiceResult<List<AllTasksDto>>> GetAllTasksAsync();
     Task<ServiceResult<List<AllUsersDto>>> GetAllUsersAsync();
     Task<ServiceResult> AddAsync(AddTaskDto dto);
+    Task<ServiceResult<SingleTaskDto>> GetSingleTaskAsync(string taskId); 
 }

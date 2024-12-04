@@ -1,0 +1,95 @@
+﻿@model SingleTaskDto
+
+<div class="container mt-5">
+    <h2 class="mb-4">Görev Detayları</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title mb-3">@Model.Title</h4>
+            <p class="card-text"><strong>Açıklama:</strong> @Model.Description</p>
+
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Durum:</strong> @(Model.IsCompleted ? "Tamamlandı" : "Devam Ediyor")</li>
+                <li class="list-group-item"><strong>Oluşturulma Tarihi:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy")</li>
+                <li class="list-group-item"><strong>Güncellenme Tarihi:</strong> @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd/MM/yyyy") : "Güncellenmedi")</li>
+                <li class="list-group-item"><strong>Bitiş Tarihi:</strong> @Model.EndDate.ToString("dd/MM/yyyy")</li>
+                <li class="list-group-item"><strong>Atanma Tarihi:</strong> @(Model.AssignedAt.HasValue ? Model.AssignedAt.Value.ToString("dd/MM/yyyy") : "Atanmadı")</li>
+                <li class="list-group-item"><strong>Kullanıcı:</strong> @(string.IsNullOrEmpty(Model.UserName) ? "Atanmamış" : Model.UserName)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h4>Sorular</h4>
+        @if (Model.Questions is not null && Model.Questions.Any())
+        {
+            <ul class="list-group">
+                @foreach (var question in Model.Questions)
+                {
+                    <li class="list-group-item">
+                        <strong>Soru:</strong> @question.Content
+                        <br />
+                        <strong>Cevap:</strong> @(string.IsNullOrEmpty(question.Answer) ? "Cevaplanmamış" : question.Answer)
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>Bu görevle ilgili soru bulunmamaktadır.</p>
+        }
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #121212; /* Siyah arka plan */
+        color: #ffffff; /* Genel metin rengi */
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        max-width: 800px;
+    }
+
+    .card {
+        background-color: #1f1f1f; /* Koyu gri kart arka planı */
+        color: #ffffff;
+        border: 1px solid #444; /* Hafif bir kenarlık */
+    }
+
+    .card-title {
+        color: #f0f0f0; /* Başlık rengi */
+    }
+
+    .list-group-item {
+        background-color: #1f1f1f; /* Kart içindeki listelerin arka planı */
+        color: #ffffff;
+        border-color: #444; /* Listelerin kenarlığı */
+    }
+
+        .list-group-item strong {
+            color: #c5c5c5; /* Kalın metinlerin rengi */
+        }
+
+    h2, h4 {
+        color: #f0f0f0; /* Başlıklar için açık gri */
+    }
+
+    a {
+        color: #00adb5; /* Link rengi */
+    }
+
+        a:hover {
+            color: #00fff5; /* Link üzerine gelince rengi */
+            text-decoration: underline;
+        }
+
+    .mt-4 p {
+        color: #dcdcdc; /* Sorular bölümü için metin rengi */
+    }
+
+    .list-group {
+        border-radius: 10px; /* Kenar yumuşatma */
+    }
+</style>

@@ -60,4 +60,23 @@ public class TaskService : ITaskService
 
         return new ServiceResult<List<AllUsersDto>>(false);
     }
+
+    public async Task<ServiceResult<SingleTaskDto>> GetSingleTaskAsync(string taskId)
+    {
+        var apiResponse = await TaskApiClient.GetAsync(taskId);
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            var result = await apiResponse.Content.ReadFromJsonAsync<SingleTaskDto>();
+
+            if (result is null)
+            {
+                return new ServiceResult<SingleTaskDto>(false);
+            }
+
+            return new ServiceResult<SingleTaskDto>(true, null, result);
+        }
+
+        return new ServiceResult<SingleTaskDto>(false);
+    }
 }
