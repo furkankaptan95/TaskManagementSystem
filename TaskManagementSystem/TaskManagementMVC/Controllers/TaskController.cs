@@ -23,7 +23,7 @@ public class TaskController : Controller
 
         if (User.IsInRole("Admin"))
         {
-            return View("AdminAll", result.Data);
+            return View(result.Data);
         }
 
         else if (User.IsInRole("User"))
@@ -31,7 +31,7 @@ public class TaskController : Controller
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var filteredTasks = result.Data.Where(task => task.UserId == userId).ToList();
 
-            return View("UserAll", filteredTasks);
+            return View(filteredTasks);
         }
        
         return Redirect("/Auth/Forbidden");
@@ -91,11 +91,40 @@ public class TaskController : Controller
         return View();
     }
 
+    [Authorize]
     [HttpGet("{taskId}")]
     public async Task<IActionResult> TaskDetails([FromRoute] string taskId)
     {
         var result = await _taskService.GetSingleTaskAsync(taskId);
 
         return View(result.Data);
+    }
+
+    [Authorize(Roles = "User")]
+    [HttpPost]
+    public async Task<IActionResult> AddQuestion([FromBody] AddQuestionDto model)
+    {
+        var result = await _taskService.AddQuestionAsync(model);
+
+        if (!result.IsSuccess)
+        {
+            return StatusCode(500, result.Message);
+        }
+
+        return Ok(new { message = result.Message });
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<IActionResult> ReplyQuestion([FromBody] ReplyQuestionDto model)
+    {
+        var result = await _taskService.ReplyQuestionAsync(model);
+
+        if (!result.IsSuccess)
+        {
+            return StatusCode(500, result.Message);
+        }
+
+        return Ok(new { message = result.Message });
     }
 }

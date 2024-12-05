@@ -16,7 +16,7 @@ public class TestUserMiddleware
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, "TestUser"), // Kullanıcı adı
-            new Claim(ClaimTypes.Role, "User"), // Kullanıcı rolü
+            new Claim(ClaimTypes.Role, "Admin"), // Kullanıcı rolü
             new Claim(ClaimTypes.NameIdentifier, "674db629310f4842afafed6d") // Kullanıcı ID'si
         };
 

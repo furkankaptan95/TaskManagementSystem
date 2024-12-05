@@ -21,43 +21,69 @@
             </ul>
         </div>
     </div>
+    <div class="mt-4" id="questionSection">
+        <div class="mt-4 mb-2 d-flex justify-content-between align-items-center">
+            @if (!User.IsInRole("User"))
+            {
+                <h4 class="mb-0">Sorular</h4>
+            }
+            else
+            {
+                <h4 class="mb-0">Sorularım</h4>
+                <button id="showQuestionForm" class="btn btn-primary">Soru Ekle</button>
+            }
+        </div>
 
-    <div class="mt-4">
-        @if (!User.IsInRole("User"))
-        {
-            <h4>Sorular</h4>
-        }
-        else
-        {
-            <h4>Sorularım</h4>
-        }
-
+        <div id="questionForm" class="mb-3" style="display:none;">
+            <h5>Sorunuzu Ekleyin</h5>
+            <textarea id="questionContent" class="form-control" placeholder="Sorunuzu buraya yazın"></textarea>
+            <button id="submitQuestion" class="btn btn-success mt-2">Ekle</button>
+        </div>
 
         @if (Model.Questions is not null && Model.Questions.Any())
         {
-            <ul class="list-group">
+            <ul id="questionList" class="list-group">
                 @foreach (var question in Model.Questions)
                 {
-                    <li class="list-group-item">
-                        <strong>Soru:</strong> @question.Content
-                        <br />
-                        <strong>Cevap:</strong> @(string.IsNullOrEmpty(question.Answer) ? "Cevaplanmamış" : question.Answer)
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Soru:</strong> @question.Content
+                            <br />
+                            <strong>Cevap:</strong>
+                            <span id="answer-@question.Id">
+                                @(string.IsNullOrEmpty(question.Answer) ? "( Henüz cevaplanmadı )" : question.Answer)
+                            </span>
+                        </div>
+
+                        @if (User.IsInRole("Admin") && string.IsNullOrEmpty(question.Answer))
+                        {
+                            <button class="btn btn-sm btn-outline-primary" onclick="showAnswerForm('@question.Id')">Cevapla</button>
+                        }
+
+                        <!-- Gizli cevap formu -->
+                        <div id="answerForm-@question.Id" class="mt-2" style="display:none;">
+                            <textarea id="answerContent-@question.Id" class="form-control" rows="2" placeholder="Cevabınızı buraya yazın"></textarea>
+                            <button class="btn btn-sm btn-success mt-2" onclick="submitAnswer('@question.Id')">Cevabı Gönder</button>
+                        </div>
                     </li>
                 }
             </ul>
         }
         else
-        { 
-            @if (!User.IsInRole("User"))
-            {
+        {
+            <p id="noQuestionsMessage">
+                @if (!User.IsInRole("User"))
+                {
                 <p>Bu görevle ilgili soru bulunmamaktadır.</p>
-            }
-            else
-            {
+                }
+                else
+                {
                 <p>Bu görevle ilgili sorunuz bulunmamaktadır.</p>
-            }
+                }
+            </p>
         }
     </div>
+
 </div>
 
 <style>
@@ -112,3 +138,162 @@
         border-radius: 10px; /* Kenar yumuşatma */
     }
 </style>
+
+<script>
+
+    function showAnswerForm(questionId) {
+        // questionId'yi string olarak işleyin
+        var strQuestionId = String(questionId);
+
+        // Sadece ilgili soru için cevap formunu göster
+        var answerForm = document.getElementById("answerForm-" + strQuestionId);
+        // Bu butonu doğru bir şekilde bulmak için querySelector'u kullanıyoruz
+        var answerButton = document.querySelector(`button[onclick="showAnswerForm('${strQuestionId}')"]`);
+
+        if (answerForm) {
+            if (answerForm.style.display === "none" || answerForm.style.display === "") {
+                answerForm.style.display = "block";
+                // Buton yazısını "Vazgeç" olarak değiştir
+                if (answerButton) {
+                    answerButton.textContent = "Vazgeç";
+                }
+            } else {
+                answerForm.style.display = "none";
+                // Buton yazısını "Cevapla" olarak değiştir
+                if (answerButton) {
+                    answerButton.textContent = "Cevapla";
+                }
+            }
+        } else {
+            console.error("Cevap formu bulunamadı: ", strQuestionId);
+        }
+    }
+
+    // Cevap gönderme işlemi
+    async function submitAnswer(questionId) {
+        // questionId'yi string olarak işleyin
+        var strQuestionId = String(questionId);
+
+        var answerContent = document.getElementById("answerContent-" + strQuestionId).value.trim();
+
+        if (answerContent) {
+            try {
+                const response = await fetch('@Url.Action("ReplyQuestion", "Task")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ questionId: strQuestionId, reply: answerContent })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(result.message);
+
+                    // Cevabı ekrana güncelle
+                    document.getElementById("answer-" + strQuestionId).innerText = answerContent;
+                    // Cevap formunu gizle
+                    document.getElementById("answerForm-" + strQuestionId).style.display = "none";
+                } else {
+                    const errorMessage = await response.text();
+                    alert("Hata: " + errorMessage);
+                }
+            } catch (error) {
+                console.error("Hata:", error);
+                alert("Bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
+            }
+        } else {
+            alert("Lütfen bir cevap girin.");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // "Soru Ekle" butonuna tıklandığında formu göster
+        var showQuestionFormButton = document.getElementById("showQuestionForm");
+        if (showQuestionFormButton) {
+            showQuestionFormButton.addEventListener("click", function () {
+                document.getElementById("questionForm").style.display = "block";
+            });
+        }
+
+        // "Soru Ekle" formunu gönderme
+        var submitQuestionButton = document.getElementById("submitQuestion");
+        if (submitQuestionButton) {
+            submitQuestionButton.addEventListener("click", async function () {
+                var questionContent = document.getElementById("questionContent").value.trim();
+
+                if (questionContent) {
+                    var taskId = "@Model.Id";  // ID'yi string olarak alın
+                    var userId = "@Model.UserId";
+                    try {
+                        const response = await fetch('@Url.Action("AddQuestion", "Task")', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ taskId: taskId, content: questionContent, userId: userId })
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            alert(result.message);
+
+                            try {
+                                // Yeni soruyu listeye ekleme işlemi
+                                var questionList = document.getElementById("questionList");
+
+                                // Liste mevcut değilse oluştur
+                                if (!questionList) {
+                                    questionList = document.createElement("ul");
+                                    questionList.id = "questionList";
+                                    questionList.className = "list-group";
+
+                                    // Listeyi uygun yere ekleyelim
+                                    var questionSection = document.getElementById("questionSection");
+                                    questionSection.appendChild(questionList);
+
+                                    // Var olan "noQuestionsMessage" varsa, onu gizleyelim
+                                    var noQuestionsMessage = document.getElementById("noQuestionsMessage");
+                                    if (noQuestionsMessage) {
+                                        noQuestionsMessage.style.display = "none";
+                                    }
+                                }
+
+                                var newQuestionItem = document.createElement("li");
+                                newQuestionItem.className = "list-group-item d-flex justify-content-between align-items-center";
+                                newQuestionItem.innerHTML = `
+                                <div>
+                                    <strong>Soru:</strong> ${questionContent}
+                                    <br />
+                                    <strong>Cevap:</strong> <span>( Henüz cevaplanmadı )</span>
+                                </div>
+                            `;
+                                questionList.appendChild(newQuestionItem);
+
+                                // Formu temizle ve gizle
+                                document.getElementById("questionContent").value = "";
+                                document.getElementById("questionForm").style.display = "none";
+                            } catch (domError) {
+                                console.error("DOM güncellenirken bir hata oluştu:", domError);
+                                alert("Soru eklendi ancak listeye eklenirken bir hata oluştu.");
+                            }
+
+                        } else {
+                            const errorMessage = await response.text(); // Hata mesajını oku
+                            alert(errorMessage); // Hata mesajını göster
+                        }
+                    } catch (error) {
+                        console.error("Fetch isteği sırasında bir hata oluştu:", error);
+                        alert("Bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
+                    }
+                } else {
+                    alert("Lütfen bir soru girin.");
+                }
+            });
+        }
+
+    });
+</script>
+
+
+

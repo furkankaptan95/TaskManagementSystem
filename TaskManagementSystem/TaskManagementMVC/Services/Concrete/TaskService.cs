@@ -23,6 +23,19 @@ public class TaskService : ITaskService
 
         return new ServiceResult(false, "Görevi atamak istediğiniz kullanıcı bulunamadığı için görev oluşturulamadı!..");
     }
+
+    public async Task<ServiceResult> AddQuestionAsync(AddQuestionDto dto)
+    {
+        var apiResponse = await TaskApiClient.PostAsJsonAsync("add-question", dto);
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, "Soru başarıyla eklendi.");
+        }
+
+        return new ServiceResult(false, "Soru eklenirken bir hata oluştu!..");
+    }
+
     public async Task<ServiceResult<List<AllTasksDto>>> GetAllTasksAsync()
     {
         var apiResponse = await TaskApiClient.GetAsync("all");
@@ -78,5 +91,17 @@ public class TaskService : ITaskService
         }
 
         return new ServiceResult<SingleTaskDto>(false);
+    }
+
+    public async Task<ServiceResult> ReplyQuestionAsync(ReplyQuestionDto dto)
+    {
+        var apiResponse = await TaskApiClient.PostAsJsonAsync("reply-question", dto);
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, "Cevap başarıyla eklendi.");
+        }
+
+        return new ServiceResult(false, "Cevap eklenirken bir hata oluştu!..");
     }
 }
