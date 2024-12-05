@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 using TaskManagementMVC.DTOs;
 using TaskManagementMVC.Services.Abstract;
 
@@ -13,20 +15,30 @@ public class TaskController : Controller
         _taskService = taskService;
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> All()
     {
         var result = await _taskService.GetAllTasksAsync();
 
-        if (!result.IsSuccess)
+        if (User.IsInRole("Admin"))
         {
-            ViewData["error"] = ErrorMessage;
-            return View();
+            return View("AdminAll", result.Data);
         }
 
-        return View(result.Data);
+        else if (User.IsInRole("User"))
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var filteredTasks = result.Data.Where(task => task.UserId == userId).ToList();
+
+            return View("UserAll", filteredTasks);
+        }
+       
+        return Redirect("/Auth/Forbidden");
+        
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> Add()
     {
@@ -45,6 +57,7 @@ public class TaskController : Controller
         return View();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> Add([FromForm] AddTaskDto model )
     {

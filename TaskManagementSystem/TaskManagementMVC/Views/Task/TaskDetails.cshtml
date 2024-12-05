@@ -9,18 +9,30 @@
             <p class="card-text"><strong>Açıklama:</strong> @Model.Description</p>
 
             <ul class="list-group list-group-flush">
+                @if (!User.IsInRole("User"))
+                {
+                    <li class="list-group-item"><strong>Kullanıcı:</strong> @(string.IsNullOrEmpty(Model.UserName) ? "Atanmamış" : Model.UserName)</li>
+                }
                 <li class="list-group-item"><strong>Durum:</strong> @(Model.IsCompleted ? "Tamamlandı" : "Devam Ediyor")</li>
                 <li class="list-group-item"><strong>Oluşturulma Tarihi:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy")</li>
                 <li class="list-group-item"><strong>Güncellenme Tarihi:</strong> @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd/MM/yyyy") : "Güncellenmedi")</li>
                 <li class="list-group-item"><strong>Bitiş Tarihi:</strong> @Model.EndDate.ToString("dd/MM/yyyy")</li>
                 <li class="list-group-item"><strong>Atanma Tarihi:</strong> @(Model.AssignedAt.HasValue ? Model.AssignedAt.Value.ToString("dd/MM/yyyy") : "Atanmadı")</li>
-                <li class="list-group-item"><strong>Kullanıcı:</strong> @(string.IsNullOrEmpty(Model.UserName) ? "Atanmamış" : Model.UserName)</li>
             </ul>
         </div>
     </div>
 
     <div class="mt-4">
-        <h4>Sorular</h4>
+        @if (!User.IsInRole("User"))
+        {
+            <h4>Sorular</h4>
+        }
+        else
+        {
+            <h4>Sorularım</h4>
+        }
+
+
         @if (Model.Questions is not null && Model.Questions.Any())
         {
             <ul class="list-group">
@@ -35,8 +47,15 @@
             </ul>
         }
         else
-        {
-            <p>Bu görevle ilgili soru bulunmamaktadır.</p>
+        { 
+            @if (!User.IsInRole("User"))
+            {
+                <p>Bu görevle ilgili soru bulunmamaktadır.</p>
+            }
+            else
+            {
+                <p>Bu görevle ilgili sorunuz bulunmamaktadır.</p>
+            }
         }
     </div>
 </div>

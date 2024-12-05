@@ -1,0 +1,61 @@
+﻿@model List<AllTasksDto>
+
+<div class="container-fluid pt-4 px-4">
+
+    @if (Model is null || Model.Count is 0)
+    {
+        <div class="bg-secondary text-center rounded p-4">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h6 class="mb-0">Görevlerim</h6>
+
+            </div>
+
+            <div class="alert alert-warning text-center" style="font-size: 1.2rem; padding: 20px; border-radius: 10px;">
+                <strong>Henüz göreviniz bulunmuyor.</strong>
+            </div>
+
+        </div>
+    }
+
+    else
+    {
+        <div class="bg-secondary text-center rounded p-4">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <h6 class="mb-0">Görevlerim</h6>
+
+            </div>
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+
+                    <thead>
+                        <tr class="text-white">
+                            <th scope="col">Başlık</th>
+                            <th scope="col">Açıklama</th>
+                            <th scope="col">Durum</th>
+                            <th scope="col">Oluşturulma Tarihi</th>
+                            <th scope="col">Atanma Tarihi</th>
+                            <th scope="col">Bitiş Tarihi</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><a href="@Url.Action("TaskDetails", "Task", new { taskId = item.Id })">@item.Title</a></td>
+                                <td>@item.Description</td>
+                                <td>@(item.IsCompleted ? "Tamamlandı" : "Tamamlanmadı")</td>
+                                <td>@item.CreatedAt.ToString("dd MMMM yyyy")</td>
+                                <td>@item.AssignedAt.Value.ToString("dd MMMM yyyy"))</td>
+                                <td>@item.EndDate.ToString("dd MMMM yyyy")</td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+</div>
