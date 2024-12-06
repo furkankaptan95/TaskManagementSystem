@@ -11,4 +11,7 @@ public interface ITaskService
     Task<ServiceResult> ReplyQuestionAsync(ReplyQuestionDto dto);
     Task<ServiceResult> MarkAsCompletedAsync(string taskId);
     Task<ServiceResult> MarkAsOngoingAsync(string taskId);
+    Task<ServiceResult> DeleteTaskAsync(string taskId);
+    Task<ServiceResult> AssignTaskAsync(AssignTaskDto dto);
+    Task<ServiceResult> UpdateTaskAsync(UpdateTaskDto dto);
 }

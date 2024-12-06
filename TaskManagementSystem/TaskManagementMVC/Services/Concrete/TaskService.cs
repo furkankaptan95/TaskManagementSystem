@@ -36,6 +36,30 @@ public class TaskService : ITaskService
         return new ServiceResult(false, "Soru eklenirken bir hata oluştu!..");
     }
 
+    public async Task<ServiceResult> AssignTaskAsync(AssignTaskDto dto)
+    {
+        var apiResponse = await TaskApiClient.PutAsJsonAsync("assign", dto);
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, "Görev kullanıcıya başarıyla atandı.");
+        }
+
+        return new ServiceResult(false, "Görev atanırken bir hata oluştu!..");
+    }
+
+    public async Task<ServiceResult> DeleteTaskAsync(string taskId)
+    {
+        var apiResponse = await TaskApiClient.DeleteAsync($"delete/{taskId}");
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, "Görev başarıyla silindi.");
+        }
+
+        return new ServiceResult(false, "Görev silinirken bir hata oluştu!..");
+    }
+
     public async Task<ServiceResult<List<AllTasksDto>>> GetAllTasksAsync()
     {
         var apiResponse = await TaskApiClient.GetAsync("all");
@@ -119,7 +143,7 @@ public class TaskService : ITaskService
 
     public async Task<ServiceResult> ReplyQuestionAsync(ReplyQuestionDto dto)
     {
-        var apiResponse = await TaskApiClient.PostAsJsonAsync("reply-question", dto);
+        var apiResponse = await TaskApiClient.PutAsJsonAsync("reply-question", dto);
 
         if (apiResponse.IsSuccessStatusCode)
         {
@@ -127,5 +151,17 @@ public class TaskService : ITaskService
         }
 
         return new ServiceResult(false, "Cevap eklenirken bir hata oluştu!..");
+    }
+
+    public async Task<ServiceResult> UpdateTaskAsync(UpdateTaskDto dto)
+    {
+        var apiResponse = await TaskApiClient.PutAsJsonAsync("update", dto);
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, "Görev başarıyla güncellendi.");
+        }
+
+        return new ServiceResult(false, "Görev güncellenirken bir hata oluştu!..");
     }
 }

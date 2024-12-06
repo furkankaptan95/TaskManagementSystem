@@ -125,7 +125,7 @@ public class TaskController : ControllerBase
         return Ok(result.Message);
     }
 
-    [HttpPost("reply-question")]
+    [HttpPut("reply-question")]
     public async Task<IActionResult> ReplyQuestion([FromBody] ReplyQuestionDto replyQuestionDto)
     {
         var result = await _taskService.ReplyQuestionAsync(replyQuestionDto);

@@ -97,6 +97,21 @@ public class TaskController : Controller
     {
         var result = await _taskService.GetSingleTaskAsync(taskId);
 
+        if (User.IsInRole("Admin") && result.Data.UserName is null)
+        {
+            var usersResult = await _taskService.GetAllUsersAsync();
+
+            if (!usersResult.IsSuccess)
+            {
+                return Redirect("/");
+            }
+
+            var users = usersResult.Data;
+
+            var userSelectList = new SelectList(users, "Id", "Username");
+            ViewBag.UserSelectList = userSelectList;
+        }
+
         return View(result.Data);
     }
 
@@ -128,7 +143,7 @@ public class TaskController : Controller
         return Ok(new { message = result.Message });
     }
 
-    [Authorize(Roles = "User")]
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> MarkAsCompleted([FromForm] string taskId)
     {
@@ -146,7 +161,7 @@ public class TaskController : Controller
         return Redirect(refererUrl);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> MarkAsOngoing([FromForm] string taskId)
     {
@@ -162,5 +177,78 @@ public class TaskController : Controller
 
         TempData["success"] = result.Message;
         return Redirect(refererUrl);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<IActionResult> DeleteTask([FromForm] string taskId)
+    {
+        var result = await _taskService.DeleteTaskAsync(taskId);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return RedirectToAction("All");
+        }
+
+        TempData["success"] = result.Message;
+        return RedirectToAction("All");
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<IActionResult> AssignTask([FromForm] AssignTaskDto model)
+    {
+        var refererUrl = HttpContext.Request.Headers["Referer"].ToString();
+
+        var result = await _taskService.AssignTaskAsync(model);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return Redirect(refererUrl);
+        }
+
+        TempData["success"] = result.Message;
+        return Redirect(refererUrl);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    public async Task<IActionResult> UpdateTask([FromQuery] string taskId)
+    {
+        var result = await _taskService.GetSingleTaskAsync(taskId);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return RedirectToAction("All");
+        }
+
+        var model = new UpdateTaskDto
+        {
+            Id = taskId,
+            Description = result.Data.Description,
+            Title = result.Data.Title,
+            EndDate = result.Data.EndDate,
+        };
+
+        return View(model);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<IActionResult> UpdateTask([FromForm] UpdateTaskDto model)
+    {
+        var result = await _taskService.UpdateTaskAsync(model);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return RedirectToAction("All");
+        }
+
+        TempData["success"] = result.Message;
+        return Redirect($"/task-details/{model.Id}");
     }
 }

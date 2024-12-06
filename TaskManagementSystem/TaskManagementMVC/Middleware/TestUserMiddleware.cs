@@ -15,9 +15,9 @@ public class TestUserMiddleware
         // Test kullanıcısını oluştur
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.Name, "TestUser"), // Kullanıcı adı
-            new Claim(ClaimTypes.Role, "User"), // Kullanıcı rolü
-            new Claim(ClaimTypes.NameIdentifier, "673f990fff722f80c23c27a3") // Kullanıcı ID'si
+            new Claim(ClaimTypes.Name, "TestKullanıcı"), // Kullanıcı adı
+            new Claim(ClaimTypes.Role, "Admin"), // Kullanıcı rolü
+            new Claim(ClaimTypes.NameIdentifier, "674db629310f4842afafed6d") // Kullanıcı ID'si
         };
 
         var identity = new ClaimsIdentity(claims, "TestAuth");

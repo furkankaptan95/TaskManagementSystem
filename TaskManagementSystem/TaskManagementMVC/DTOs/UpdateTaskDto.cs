@@ -1,4 +1,4 @@
-﻿namespace TaskAPI.DTOs;
+﻿namespace TaskManagementMVC.DTOs;
 public class UpdateTaskDto
 {
     public string Id { get; set; }

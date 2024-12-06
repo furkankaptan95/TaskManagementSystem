@@ -20,14 +20,40 @@
     <h2 class="mb-4">Görev Detayları</h2>
 
     <div class="card shadow-sm">
-        <div class="card-body">
+        <div class="card-body position-relative">
+            <!-- Kart başlığı -->
             <h4 class="card-title mb-3">@Model.Title</h4>
             <p class="card-text"><strong>Açıklama:</strong> @Model.Description</p>
 
+            <!-- Kart detayları -->
             <ul class="list-group list-group-flush">
                 @if (!User.IsInRole("User"))
                 {
-                    <li class="list-group-item"><strong>Kullanıcı:</strong> @(string.IsNullOrEmpty(Model.UserName) ? "Atanmamış" : Model.UserName)</li>
+                    <li class="list-group-item d-flex align-items-center justify-content-between">
+                        <span><strong>Kullanıcı:</strong> @(string.IsNullOrEmpty(Model.UserName) ? "Atanmamış" : Model.UserName)</span>
+
+                        @if (string.IsNullOrEmpty(Model.UserName))
+                        {
+                            <!-- Kullanıcı Atama Formu -->
+                            <form asp-controller="Task" asp-action="AssignTask" method="post" class="d-flex align-items-center" style="margin: 0;">
+                                <!-- Gizli input: Task ID -->
+                                <input type="hidden" name="TaskId" value="@Model.Id" />
+
+                                <!-- SelectList -->
+                                <select id="userSelect" name="UserId" class="form-select mx-2" style="width: auto;" onchange="toggleAssignButton()">
+                                    <option disabled selected value="">-- Ata --</option>
+                                    @foreach (var item in ViewBag.UserSelectList as SelectList)
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                </select>
+
+                                <!-- Gönder Butonu -->
+                                <button id="assignButton" type="submit" class="btn btn-primary rounded-pill px-4" disabled>Ata</button>
+                            </form>
+                        }
+                    </li>
+
                 }
                 <li class="list-group-item"><strong>Durum:</strong> @(Model.IsCompleted ? "Tamamlandı" : "Devam Ediyor")</li>
                 <li class="list-group-item"><strong>Oluşturulma Tarihi:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy")</li>
@@ -36,24 +62,42 @@
                 <li class="list-group-item"><strong>Atanma Tarihi:</strong> @(Model.AssignedAt.HasValue ? Model.AssignedAt.Value.ToString("dd/MM/yyyy") : "Atanmadı")</li>
             </ul>
 
-            @if (User.IsInRole("User") && !Model.IsCompleted)
+            <!-- İşaretle Butonları -->
+            @if (!Model.IsCompleted)
             {
-                <form asp-controller="Task" asp-action="MarkAsCompleted" method="post">
+                <form asp-controller="Task" asp-action="MarkAsCompleted" method="post" class="mt-5">
                     <input type="hidden" name="taskId" value="@Model.Id" />
-                    <button type="submit" class="btn btn-success mt-3">Tamamlandı Olarak İşaretle</button>
+                    <button type="submit" class="btn btn-success">Tamamlandı Olarak Değiştir</button>
                 </form>
-
             }
 
-            @if (User.IsInRole("Admin") && Model.IsCompleted)
+            @if (Model.IsCompleted)
             {
-                <form asp-controller="Task" asp-action="MarkAsOngoing" method="post">
+                <form asp-controller="Task" asp-action="MarkAsOngoing" method="post" class="mt-5">
                     <input type="hidden" name="taskId" value="@Model.Id" />
-                    <button type="submit" class="btn btn-success mt-3">Devam Ediyor Olarak Değiştir</button>
+                    <button type="submit" class="btn btn-success">Devam Ediyor Olarak Değiştir</button>
                 </form>
+            }
+
+            <!-- Sağ Alt Butonlar -->
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="position-absolute bottom-0 end-0 p-3 d-flex gap-2">
+                    <!-- Sil Butonu -->
+                    <form asp-controller="Task" asp-action="DeleteTask" method="post" style="display:inline;">
+                        <input type="hidden" name="taskId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger rounded-pill px-4">Sil</button>
+                    </form>
+
+                    <!-- Düzenle Butonu -->
+                    <a href="@Url.Action("UpdateTask", "Task", new { taskId = Model.Id })" class="btn btn-warning">Düzenle</a>
+
+                </div>
             }
         </div>
     </div>
+
+
 
     <div class="mt-4" id="questionSection">
         <div class="mt-4 mb-2 d-flex justify-content-between align-items-center">
@@ -198,9 +242,23 @@
     .list-group {
         border-radius: 10px; /* Kenar yumuşatma */
     }
+
+    .btn {
+        font-weight: bold; /* Daha belirgin yazı */
+        transition: transform 0.2s ease-in-out; /* Hover animasyonu */
+    }
+
+        .btn:hover {
+            transform: scale(1.05); /* Hafif büyüme efekti */
+        }
 </style>
 
 <script>
+    function toggleAssignButton() {
+        const select = document.getElementById('userSelect');
+        const button = document.getElementById('assignButton');
+        button.disabled = select.value === "";
+    }
 
     function showAnswerForm(questionId) {
         // questionId'yi string olarak işleyin
@@ -355,6 +413,4 @@
 
     });
 </script>
-
-
 

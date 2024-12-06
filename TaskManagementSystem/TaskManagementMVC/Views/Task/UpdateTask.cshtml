@@ -1,0 +1,144 @@
+﻿@model UpdateTaskDto
+
+@{
+    ViewData["Title"] = "Görev Güncelle";
+}
+
+<h2 class="mt-5">@ViewData["Title"]</h2>
+
+<form asp-controller="Task" asp-action="UpdateTask" method="post" class="update-form">
+    <div class="form-group">
+        <label for="Title">Başlık</label>
+        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />
+    </div>
+
+    <div class="form-group">
+        <label for="Description">Açıklama</label>
+        <textarea class="form-control" id="Description" name="Description" rows="4" required>@Model.Description</textarea>
+    </div>
+
+    <div class="form-group">
+        <label for="EndDate">Bitiş Tarihi</label>
+        <input type="date" class="form-control" id="EndDate" name="EndDate" value="@Model.EndDate.ToString("yyyy-MM-dd")" required />
+    </div>
+
+    <input type="hidden" name="Id" value="@Model.Id" />
+
+    <button type="submit" class="btn btn-success mt-3 submit-btn">Güncelle</button>
+    <a href="/task-details/@Model.Id" class="btn btn-secondary mt-3 cancel-btn">İptal</a>
+</form>
+
+<style>
+    /* Genel stil - Siyah ve gri tonları */
+    body {
+        background-color: #121212;
+        color: #e0e0e0;
+        font-family: Arial, sans-serif;
+    }
+
+    .update-form {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border-radius: 8px;
+        background-color: #1e1e1e;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    h2 {
+        text-align: center;
+        font-size: 24px;
+        color: #f1f1f1;
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-weight: bold;
+        color: #c0c0c0;
+    }
+
+    .form-control {
+        border-radius: 4px;
+        border: 1px solid #333;
+        padding: 10px;
+        font-size: 14px;
+        background-color: #333;
+        color: #e0e0e0;
+    }
+
+    .form-control:focus {
+        border-color: #28a745;
+        outline: none;
+        box-shadow: 0 0 8px rgba(38, 143, 255, 0.5);
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 5px;
+        background-color: #28a745;
+        border: none;
+        color: white;
+        transition: background-color 0.3s ease;
+    }
+
+    .submit-btn:hover {
+        background-color: #218838;
+    }
+
+    .cancel-btn {
+        display: inline-block;
+        padding: 10px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        border-radius: 5px;
+        background-color: #6c757d;
+        color: white;
+        text-decoration: none;
+        margin-top: 10px;
+        transition: background-color 0.3s ease;
+    }
+
+    .cancel-btn:hover {
+        background-color: #5a6268;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    /* Disabled state */
+    .form-control:disabled {
+        background-color: #444;
+        border-color: #666;
+        color: #888;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        background-color: transparent !important; /* Varsayılan renk */
+        border: none !important; /* Border'ı kaldır */
+    }
+
+    /* Firefox ve diğer tarayıcılarda da varsayılan simgeyi göstermek için */
+    input[type="date"]::-moz-calendar-picker-indicator {
+        background-color: transparent !important; /* Varsayılan renk */
+        border: none !important; /* Border'ı kaldır */
+    }
+
+    /* Responsive design */
+    @@media (max-width: 768px) {
+        .update-form {
+            padding: 15px;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        .form-control, .submit-btn, .cancel-btn {
+            font-size: 14px;
+        }
+    }
+</style>

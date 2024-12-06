@@ -133,34 +133,11 @@ public class TaskService
             return new ServiceResult(false, "Task to update is not exist.");
         }
 
-        if(dto.UserId is not null)
-        {
-            if (!ObjectId.TryParse(dto.UserId, out _))
-            {
-                return new ServiceResult(false, "Invalid UserId Format");
-            }
+        existingTask.Description = dto.Description;
+        existingTask.Title = dto.Title; 
+        existingTask.EndDate = dto.EndDate;
 
-            var user = await _mongoDbService.Users.Find(u => u.Id == new ObjectId(dto.UserId)).FirstOrDefaultAsync();
-
-            if (user == null)
-            {
-                return new ServiceResult(false, "User not found.");
-            }
-        }
-
-       
-
-        var updatedTask = new TaskEntity
-        {
-            Id = ObjectId.Parse(dto.Id),
-            Description = dto.Description,
-            Title = dto.Title,
-            EndDate = dto.EndDate,
-            UserId = dto.UserId,
-            IsCompleted = dto.IsCompleted,
-        };
-
-        await _mongoDbService.UpdateTaskAsync(dto.Id, updatedTask);
+        await _mongoDbService.UpdateTaskAsync(dto.Id, existingTask);
 
         return new ServiceResult(true, "Task updated successfuly.");
     }
