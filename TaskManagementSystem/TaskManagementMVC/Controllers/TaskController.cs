@@ -92,7 +92,7 @@ public class TaskController : Controller
     }
 
     [Authorize]
-    [HttpGet("{taskId}")]
+    [HttpGet("task-details/{taskId}")]
     public async Task<IActionResult> TaskDetails([FromRoute] string taskId)
     {
         var result = await _taskService.GetSingleTaskAsync(taskId);
@@ -126,5 +126,41 @@ public class TaskController : Controller
         }
 
         return Ok(new { message = result.Message });
+    }
+
+    [Authorize(Roles = "User")]
+    [HttpPost]
+    public async Task<IActionResult> MarkAsCompleted([FromForm] string taskId)
+    {
+        var refererUrl = HttpContext.Request.Headers["Referer"].ToString();
+
+        var result = await _taskService.MarkAsCompletedAsync(taskId);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return Redirect(refererUrl);
+        }
+
+        TempData["success"] = result.Message;
+        return Redirect(refererUrl);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost]
+    public async Task<IActionResult> MarkAsOngoing([FromForm] string taskId)
+    {
+        var refererUrl = HttpContext.Request.Headers["Referer"].ToString();
+
+        var result = await _taskService.MarkAsOngoingAsync(taskId);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return Redirect(refererUrl);
+        }
+
+        TempData["success"] = result.Message;
+        return Redirect(refererUrl);
     }
 }

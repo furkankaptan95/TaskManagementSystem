@@ -94,8 +94,8 @@ public class TaskController : ControllerBase
         return Ok(userTasks);
     }
 
-    [HttpPut("status/{taskId}")]
-    public async Task<IActionResult> ChangeStatus([FromRoute] string taskId)
+    [HttpPut("status")]
+    public async Task<IActionResult> ChangeStatus([FromBody] string taskId)
     {
         if (!ObjectId.TryParse(taskId, out _))
         {

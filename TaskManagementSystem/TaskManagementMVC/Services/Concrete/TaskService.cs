@@ -93,6 +93,30 @@ public class TaskService : ITaskService
         return new ServiceResult<SingleTaskDto>(false);
     }
 
+    public async Task<ServiceResult> MarkAsCompletedAsync(string taskId)
+    {
+        var apiResponse = await TaskApiClient.PutAsJsonAsync("status",taskId);
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, "Görev durumu -Tamamlandı- olarak değiştirildi.");
+        }
+
+        return new ServiceResult(false, "Görev durumu değiştirilirken bir hata oluştu!..");
+    }
+
+    public async Task<ServiceResult> MarkAsOngoingAsync(string taskId)
+    {
+        var apiResponse = await TaskApiClient.PutAsJsonAsync("status", taskId);
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, "Görev durumu -Devam Ediyor- olarak değiştirildi.");
+        }
+
+        return new ServiceResult(false, "Görev durumu değiştirilirken bir hata oluştu!..");
+    }
+
     public async Task<ServiceResult> ReplyQuestionAsync(ReplyQuestionDto dto)
     {
         var apiResponse = await TaskApiClient.PostAsJsonAsync("reply-question", dto);

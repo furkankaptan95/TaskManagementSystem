@@ -1,5 +1,21 @@
 ﻿@model SingleTaskDto
 
+@{
+    if (TempData["success"] is not null)
+    {
+        <div class="alert custom-alert-success mt-5">
+            @TempData["success"]
+        </div>
+    }
+
+    if (TempData["error"] is not null)
+    {
+        <div class="alert custom-alert-error mt-5">
+            @TempData["error"]
+        </div>
+    }
+}
+
 <div class="container mt-5">
     <h2 class="mb-4">Görev Detayları</h2>
 
@@ -19,8 +35,26 @@
                 <li class="list-group-item"><strong>Bitiş Tarihi:</strong> @Model.EndDate.ToString("dd/MM/yyyy")</li>
                 <li class="list-group-item"><strong>Atanma Tarihi:</strong> @(Model.AssignedAt.HasValue ? Model.AssignedAt.Value.ToString("dd/MM/yyyy") : "Atanmadı")</li>
             </ul>
+
+            @if (User.IsInRole("User") && !Model.IsCompleted)
+            {
+                <form asp-controller="Task" asp-action="MarkAsCompleted" method="post">
+                    <input type="hidden" name="taskId" value="@Model.Id" />
+                    <button type="submit" class="btn btn-success mt-3">Tamamlandı Olarak İşaretle</button>
+                </form>
+
+            }
+
+            @if (User.IsInRole("Admin") && Model.IsCompleted)
+            {
+                <form asp-controller="Task" asp-action="MarkAsOngoing" method="post">
+                    <input type="hidden" name="taskId" value="@Model.Id" />
+                    <button type="submit" class="btn btn-success mt-3">Devam Ediyor Olarak Değiştir</button>
+                </form>
+            }
         </div>
     </div>
+
     <div class="mt-4" id="questionSection">
         <div class="mt-4 mb-2 d-flex justify-content-between align-items-center">
             @if (!User.IsInRole("User"))
@@ -87,6 +121,33 @@
 </div>
 
 <style>
+
+    .custom-alert-success {
+        position: fixed; /* Sayfada sabit konumlandırma */
+        top: 25px; /* Ekranın üst kısmından 10px boşluk */
+        left: 58%; /* Ekranın ortasına hizalama */
+        transform: translateX(-50%); /* Ortalamak için translate */
+        z-index: 1000; /* Diğer elementlerin üstünde görünmesini sağlar */
+        background-color: wheat; /* Arka plan rengi */
+        color: #6b4f3a; /* Yazı rengi (daha koyu bir ton) */
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-alert-error {
+        position: fixed; /* Sayfada sabit konumlandırma */
+        top: 25px; /* Ekranın üst kısmından 10px boşluk */
+        left: 58%; /* Ekranın ortasına hizalama */
+        transform: translateX(-50%); /* Ortalamak için translate */
+        z-index: 1000; /* Diğer elementlerin üstünde görünmesini sağlar */
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
     body {
         background-color: #121212; /* Siyah arka plan */
         color: #ffffff; /* Genel metin rengi */

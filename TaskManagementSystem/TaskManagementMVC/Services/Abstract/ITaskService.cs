@@ -9,4 +9,6 @@ public interface ITaskService
     Task<ServiceResult<SingleTaskDto>> GetSingleTaskAsync(string taskId);
     Task<ServiceResult> AddQuestionAsync(AddQuestionDto dto);
     Task<ServiceResult> ReplyQuestionAsync(ReplyQuestionDto dto);
+    Task<ServiceResult> MarkAsCompletedAsync(string taskId);
+    Task<ServiceResult> MarkAsOngoingAsync(string taskId);
 }
