@@ -23,6 +23,18 @@ public class TaskController : Controller
 
         if (User.IsInRole("Admin"))
         {
+            var usersResult = await _taskService.GetAllUsersAsync();
+
+            if (!usersResult.IsSuccess)
+            {
+                return Redirect("/");
+            }
+
+            var users = usersResult.Data;
+
+            var userSelectList = new SelectList(users, "Id", "Username");
+            ViewBag.UserSelectList = userSelectList;
+
             return View(result.Data);
         }
 
