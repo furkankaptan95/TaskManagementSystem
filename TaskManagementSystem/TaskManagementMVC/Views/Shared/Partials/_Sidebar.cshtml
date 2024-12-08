@@ -27,6 +27,16 @@
                     }
                 </div>
             </div>
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"><i class="fa fa-laptop me-2"></i>Kullanıcılar</a>
+                <div class="dropdown-menu bg-transparent border-0">
+                    <a href="/User/All" class="dropdown-item">Tüm Kullanıcılar</a>
+                    <a href="/User/Add" class="dropdown-item">Yeni Kullanıcı Ekle</a>
+                </div>
+                </div>
+            }
         </div>
     </nav>
 </div>

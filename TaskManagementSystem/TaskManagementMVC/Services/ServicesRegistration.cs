@@ -20,8 +20,6 @@ public static class ServicesRegistration
             c.BaseAddress = new Uri(taskApiUrl);
         });
 
-        services.AddScoped<ITaskService, TaskService>();
-
         var userApiUrl = configuration.GetValue<string>("UserApiUrl");
 
         if (string.IsNullOrWhiteSpace(userApiUrl))
@@ -33,6 +31,21 @@ public static class ServicesRegistration
         {
             c.BaseAddress = new Uri(userApiUrl);
         });
+
+        var authApiUrl = configuration.GetValue<string>("AuthApiUrl");
+
+        if (string.IsNullOrWhiteSpace(authApiUrl))
+        {
+            throw new InvalidOperationException("AuthApiUrl is required in appsettings.json");
+        }
+
+        services.AddHttpClient("authApi", c =>
+        {
+            c.BaseAddress = new Uri(authApiUrl);
+        });
+
+        services.AddScoped<ITaskService, TaskService>();
+        services.AddScoped<IUserService, UserService>();
 
         return services;
 
