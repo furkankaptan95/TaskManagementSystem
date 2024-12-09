@@ -46,4 +46,23 @@ public class UserService : IUserService
 
         return new ServiceResult<List<AllUsersDto>>(false);
     }
+
+    public async Task<ServiceResult<UserDetailsDto>> GetUserDetailsAsync(string userId)
+    {
+        var userApiResponse = await UserApiClient.GetAsync(userId);
+
+        if (userApiResponse.IsSuccessStatusCode)
+        {
+            var result = await userApiResponse.Content.ReadFromJsonAsync<UserDetailsDto>();
+
+            if (result is null)
+            {
+                return new ServiceResult<UserDetailsDto>(false);
+            }
+
+            return new ServiceResult<UserDetailsDto>(true, null, result);
+        }
+
+        return new ServiceResult<UserDetailsDto>(false);
+    }
 }

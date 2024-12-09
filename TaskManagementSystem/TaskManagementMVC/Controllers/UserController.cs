@@ -46,4 +46,19 @@ public class UserController : Controller
         ViewData["success"] = result.Message;
         return View();
     }
+
+    [HttpGet("user-details/{userId}")]
+    public async Task<IActionResult> UserDetails([FromRoute] string userId)
+    {
+        var result = await _userService.GetUserDetailsAsync(userId);
+
+        if (!result.IsSuccess)
+        {
+            return Redirect("/");
+        }
+
+        var user = result.Data;
+
+        return View(user);
+    }
 }
