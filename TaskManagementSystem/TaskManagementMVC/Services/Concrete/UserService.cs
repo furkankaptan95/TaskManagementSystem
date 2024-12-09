@@ -28,6 +28,18 @@ public class UserService : IUserService
         return new ServiceResult(false, result);
     }
 
+    public async Task<ServiceResult> DeleteUserAsync(string userId)
+    {
+        var apiResponse = await UserApiClient.DeleteAsync($"delete/{userId}");
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, "Kullanıcı başarıyla silindi.");
+        }
+
+        return new ServiceResult(false, "Kullanıcı silinirken bir hata oluştu!..");
+    }
+
     public async Task<ServiceResult<List<AllUsersDto>>> GetAllUsersAsync()
     {
         var userApiResponse = await UserApiClient.GetAsync("all");

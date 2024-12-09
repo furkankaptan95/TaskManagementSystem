@@ -61,4 +61,19 @@ public class UserController : Controller
 
         return View(user);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> DeleteUser([FromQuery] string userId)
+    {
+        var result = await _userService.DeleteUserAsync(userId);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return RedirectToAction("All");
+        }
+
+        TempData["success"] = result.Message;
+        return RedirectToAction("All");
+    }
 }

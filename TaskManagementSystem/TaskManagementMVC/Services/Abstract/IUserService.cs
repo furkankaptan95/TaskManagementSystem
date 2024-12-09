@@ -6,4 +6,5 @@ public interface IUserService
     Task<ServiceResult<List<AllUsersDto>>> GetAllUsersAsync();
     Task<ServiceResult> AddUserAsync(AddUserDto dto);
     Task<ServiceResult<UserDetailsDto>> GetUserDetailsAsync(string userId);
+    Task<ServiceResult> DeleteUserAsync(string userId);
 }

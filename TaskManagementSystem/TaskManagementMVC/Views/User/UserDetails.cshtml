@@ -37,9 +37,9 @@
                     </table>
                 </div>
                 <div class="card-footer text-center">
-                    <a href="/user-list" class="btn btn-secondary btn-sm">Geri Dön</a>
+                    <a href="/User/All" class="btn btn-secondary btn-sm">Geri Dön</a>
                     <a href="/edit-user/@Model.Id" class="btn btn-warning btn-sm">Düzenle</a>
-                    <a href="/delete-user/@Model.Id" class="btn btn-danger btn-sm">Sil</a>
+                    <a href="@Url.Action("DeleteUser", "User", new { userId = Model.Id })" class="btn btn-danger btn-sm">Sil</a>
                 </div>
             </div>
         </div>
