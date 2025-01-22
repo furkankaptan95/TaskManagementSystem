@@ -76,4 +76,19 @@ public class UserController : Controller
         TempData["success"] = result.Message;
         return RedirectToAction("All");
     }
+
+    [HttpGet("edit-user/{userId}")]
+    public async Task<IActionResult> Edit([FromRoute] string userId)
+    {
+        var result = await _userService.GetUserDetailsAsync(userId);
+
+        if (!result.IsSuccess)
+        {
+            return Redirect("/");
+        }
+
+        var user = result.Data;
+
+        return View(user);
+    }
 }
