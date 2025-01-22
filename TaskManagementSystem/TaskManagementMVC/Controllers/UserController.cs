@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 using TaskManagementMVC.DTOs;
 using TaskManagementMVC.Services.Abstract;
 
@@ -78,7 +79,7 @@ public class UserController : Controller
     }
 
     [HttpGet("edit-user/{userId}")]
-    public async Task<IActionResult> Edit([FromRoute] string userId)
+    public async Task<IActionResult> Update([FromRoute] string userId)
     {
         var result = await _userService.GetUserDetailsAsync(userId);
 
@@ -90,5 +91,20 @@ public class UserController : Controller
         var user = result.Data;
 
         return View(user);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateUser([FromForm] UpdateUserDto updateUserDto)
+    {
+        var result = await _userService.UpdateUserAsync(updateUserDto);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return Redirect($"/user-details/{updateUserDto.Id}");
+        }
+
+        TempData["success"] = result.Message;
+        return Redirect($"/user-details/{updateUserDto.Id}");
     }
 }
