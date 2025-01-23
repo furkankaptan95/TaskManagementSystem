@@ -5,7 +5,7 @@ using TaskAPI.DTOs;
 
 namespace TaskAPI.Services;
 
-public class TaskService
+public class TaskService : ITaskService
 {
     private readonly MongoDbService _mongoDbService;
 
