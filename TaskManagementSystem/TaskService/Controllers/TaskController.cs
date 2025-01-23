@@ -39,7 +39,7 @@ public class TaskController : ControllerBase
             return NotFound(result.Message);
         }
 
-        return Ok(result);
+        return Ok(result.Data);
     }
 
     [HttpPost("add")]
@@ -94,8 +94,8 @@ public class TaskController : ControllerBase
         return Ok(userTasks);
     }
 
-    [HttpPut("status/{taskId}")]
-    public async Task<IActionResult> ChangeStatus([FromRoute] string taskId)
+    [HttpPut("status")]
+    public async Task<IActionResult> ChangeStatus([FromBody] string taskId)
     {
         if (!ObjectId.TryParse(taskId, out _))
         {
@@ -125,7 +125,7 @@ public class TaskController : ControllerBase
         return Ok(result.Message);
     }
 
-    [HttpPost("reply-question")]
+    [HttpPut("reply-question")]
     public async Task<IActionResult> ReplyQuestion([FromBody] ReplyQuestionDto replyQuestionDto)
     {
         var result = await _taskService.ReplyQuestionAsync(replyQuestionDto);

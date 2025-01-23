@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <partial name="Partials/_PageHead.cshtml" />
+    @await RenderSectionAsync("Styles", required: false)
+
+</head>
+
+<body>
+
+    <div class="container-fluid position-relative d-flex p-0">
+
+        <partial name="Partials/_Spinner.cshtml" />
+
+        <partial name="Partials/_Sidebar.cshtml" />
+
+        <div class="content">
+            
+            <partial name="Partials/_Navbar.cshtml" />
+
+                @RenderBody()
+
+        </div>
+
+        <a href="#" class="btn btn-lg btn-primary btn-lg-square back-to-top"><i class="bi bi-arrow-up"></i></a>
+
+    </div>
+
+    <partial name="Partials/_PageScripts.cshtml" />
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

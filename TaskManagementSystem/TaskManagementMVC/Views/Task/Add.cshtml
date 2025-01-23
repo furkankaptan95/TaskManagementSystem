@@ -1,0 +1,190 @@
+﻿@model AddTaskDto
+
+@{
+    ViewData["Title"] = "Yeni Görev Ekle";
+}
+
+@{
+    if (ViewData["success"] is not null)
+    {
+        <div class="alert custom-alert-success mt-5">
+            @ViewData["success"]
+        </div>
+    }
+
+    if (ViewData["error"] is not null)
+    {
+        <div class="alert custom-alert-error mt-5">
+            @ViewData["error"]
+        </div>
+    }
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Yeni Görev Ekle</h2>
+    <!-- Form -->
+    <form asp-controller="Task" asp-action="Add" method="post" id="taskForm">
+        <!-- Task Başlığı -->
+        <div class="form-group mb-3">
+            <label for="Title">Başlık</label>
+            <input type="text" class="form-control" id="Title" name="Title" placeholder="Görev başlığı girin" />
+            <span class="text-danger" id="titleError"></span>
+        </div>
+
+        <!-- Task Açıklaması -->
+        <div class="form-group mb-3">
+            <label for="Description">Açıklama</label>
+            <textarea class="form-control" id="Description" name="Description" rows="4" placeholder="Görev açıklamasını girin"></textarea>
+            <span class="text-danger" id="descriptionError"></span>
+        </div>
+
+        <!-- Kullanıcı Seçimi -->
+        <div class="form-group mb-3">
+            <label for="UserId">Kullanıcı (Opsiyonel)</label>
+            <select class="form-select" id="UserId" name="UserId">
+                <option value="">Daha sonra seç</option>
+                @foreach (var user in ViewBag.UserSelectList as SelectList)
+                {
+                    <option value="@user.Value">@user.Text</option>
+                }
+            </select>
+        </div>
+
+        <!-- Bitiş Tarihi -->
+        <div class="form-group mb-3">
+            <label for="EndDate">Bitiş Tarihi</label>
+            <input type="date" class="form-control" id="EndDate" name="EndDate" />
+            <span class="text-danger" id="endDateError"></span>
+        </div>
+
+        <!-- Gönder Butonu -->
+        <button type="submit" class="btn btn-primary">Görev Ekle</button>
+    </form>
+</div>
+
+<style>
+    body {
+        background-color: #121212; /* Sayfa arka planı koyu gri/siyah */
+        color: #f1f1f1; /* Ana metin rengi (açık gri) */
+        font-family: Arial, sans-serif; /* Modern bir font */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Sayfa yüksekliğini tam ekran yapar */
+        margin: 0;
+    }
+
+    .container {
+        background-color: #1e1e1e; /* Form arka planı koyu gri */
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.5); /* Hafif gölge efekti */
+        max-width: 600px;
+        width: 100%;
+    }
+
+    h2 {
+        color: #ffffff; /* Başlık rengi beyaz */
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-weight: bold;
+        color: #ffffff; /* Label rengi beyaz */
+    }
+
+    .form-control, .form-select {
+        background-color: #2b2b2b; /* Input ve dropdown arka planı */
+        color: #ffffff; /* Input ve dropdown yazı rengi */
+        border: 1px solid #444444; /* Kenarlık rengi */
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff; /* Focus olduğunda kenarlık rengi */
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+
+    .custom-alert-success {
+        position: fixed; /* Sayfada sabit konumlandırma */
+        top: 25px; /* Ekranın üst kısmından 10px boşluk */
+        left: 58%; /* Ekranın ortasına hizalama */
+        transform: translateX(-50%); /* Ortalamak için translate */
+        z-index: 1000; /* Diğer elementlerin üstünde görünmesini sağlar */
+        background-color: wheat; /* Arka plan rengi */
+        color: #6b4f3a; /* Yazı rengi (daha koyu bir ton) */
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-alert-error {
+        position: fixed; /* Sayfada sabit konumlandırma */
+        top: 25px; /* Ekranın üst kısmından 10px boşluk */
+        left: 58%; /* Ekranın ortasına hizalama */
+        transform: translateX(-50%); /* Ortalamak için translate */
+        z-index: 1000; /* Diğer elementlerin üstünde görünmesini sağlar */
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+</style>
+
+<script>
+    document.getElementById('taskForm').onsubmit = function (event) {
+        let isValid = true;
+
+        // Başlık kontrolü
+        const title = document.getElementById('Title').value;
+        const titleError = document.getElementById('titleError');
+        titleError.textContent = ""; // Hata mesajını sıfırla
+        if (!title || title.trim() === "") {
+            titleError.textContent = "Başlık zorunludur ve boş olamaz.";
+            isValid = false;
+        } else if (title.length > 50) {
+            titleError.textContent = "Başlık en fazla 50 karakter olabilir.";
+            isValid = false;
+        }
+
+        // Açıklama kontrolü
+        const description = document.getElementById('Description').value;
+        const descriptionError = document.getElementById('descriptionError');
+        descriptionError.textContent = ""; // Hata mesajını sıfırla
+        if (!description || description.trim() === "") {
+            descriptionError.textContent = "Açıklama zorunludur ve boş olamaz.";
+            isValid = false;
+        } else if (description.length > 300) {
+            descriptionError.textContent = "Açıklama en fazla 300 karakter olabilir.";
+            isValid = false;
+        }
+
+        // Bitiş Tarihi kontrolü
+        const endDate = document.getElementById('EndDate').value;
+        const endDateError = document.getElementById('endDateError');
+        endDateError.textContent = ""; // Hata mesajını sıfırla
+
+        if (!endDate) {
+            endDateError.textContent = "Bitiş tarihi zorunludur.";
+            isValid = false;
+        } else {
+            // Tarih formatı kontrolü
+            const parsedDate = Date.parse(endDate);
+            if (isNaN(parsedDate)) {
+                endDateError.textContent = "Geçerli bir tarih giriniz.";
+                isValid = false;
+            }
+        }
+
+        // Eğer geçersizse formu göndermeyi engelle
+        if (!isValid) {
+            event.preventDefault();
+        }
+    };
+</script>

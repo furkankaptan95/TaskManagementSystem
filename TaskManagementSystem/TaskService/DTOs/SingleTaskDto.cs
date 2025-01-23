@@ -1,6 +1,4 @@
-﻿using TaskAPI.Entities;
-
-namespace TaskAPI.DTOs;
+﻿namespace TaskAPI.DTOs;
 public class SingleTaskDto
 {
     public string Id { get; set; }

@@ -1,0 +1,125 @@
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
+using TaskManagementMVC.DTOs;
+using TaskManagementMVC.Services.Abstract;
+
+namespace TaskManagementMVC.Controllers;
+public class UserController : Controller
+{
+    private readonly IUserService _userService;
+    public UserController(IUserService userService)
+    {
+        _userService = userService;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> All()
+    {
+        var result = await _userService.GetAllUsersAsync();
+
+        if (!result.IsSuccess)
+        {
+            return Redirect("/");
+        }
+
+        var users = result.Data;
+
+        return View(result.Data);
+    }
+
+    [HttpGet]
+    public IActionResult Add()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Add(AddUserDto model)
+    {
+        var result = await _userService.AddUserAsync(model);
+
+        if (!result.IsSuccess)
+        {
+            ViewData["error"] = result.Message;
+            return View(model);
+        }
+
+        ViewData["success"] = result.Message;
+        return View();
+    }
+
+    [HttpGet("user-details/{userId}")]
+    public async Task<IActionResult> UserDetails([FromRoute] string userId)
+    {
+        var result = await _userService.GetUserDetailsAsync(userId);
+
+        if (!result.IsSuccess)
+        {
+            return Redirect("/");
+        }
+
+        var user = result.Data;
+
+        return View(user);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DeleteUser([FromQuery] string userId)
+    {
+        var result = await _userService.DeleteUserAsync(userId);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return RedirectToAction("All");
+        }
+
+        TempData["success"] = result.Message;
+        return RedirectToAction("All");
+    }
+
+    [HttpGet("edit-user/{userId}")]
+    public async Task<IActionResult> Update([FromRoute] string userId)
+    {
+        var result = await _userService.GetUserDetailsAsync(userId);
+
+        if (!result.IsSuccess)
+        {
+            return Redirect("/");
+        }
+
+        var user = result.Data;
+
+        return View(user);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> UpdateUser([FromForm] UpdateUserDto updateUserDto)
+    {
+        var result = await _userService.UpdateUserAsync(updateUserDto);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return Redirect($"/user-details/{updateUserDto.Id}");
+        }
+
+        TempData["success"] = result.Message;
+        return Redirect($"/user-details/{updateUserDto.Id}");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ChangeRole([FromForm] UpdateRoleDto updateRoleDto)
+    {
+        var result = await _userService.UpdateRoleAsync(updateRoleDto);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return Redirect($"/user-details/{updateRoleDto.UserId}");
+        }
+
+        TempData["success"] = result.Message;
+        return Redirect($"/user-details/{updateRoleDto.UserId}");
+    }
+}

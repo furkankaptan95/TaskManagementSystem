@@ -6,6 +6,7 @@ public class AllTasksDto
     public string Description { get; set; }
     public bool IsCompleted { get; set; }
     public DateTime CreatedAt { get; set; }
+    public DateTime? AssignedAt { get; set; }
     public DateTime EndDate { get; set; }
     public string? UserId { get; set; }
     public string? Username { get; set; }

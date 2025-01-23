@@ -1,0 +1,416 @@
+﻿@model SingleTaskDto
+
+@{
+    if (TempData["success"] is not null)
+    {
+        <div class="alert custom-alert-success mt-5">
+            @TempData["success"]
+        </div>
+    }
+
+    if (TempData["error"] is not null)
+    {
+        <div class="alert custom-alert-error mt-5">
+            @TempData["error"]
+        </div>
+    }
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Görev Detayları</h2>
+
+    <div class="card shadow-sm">
+        <div class="card-body position-relative">
+            <!-- Kart başlığı -->
+            <h4 class="card-title mb-3">@Model.Title</h4>
+            <p class="card-text"><strong>Açıklama:</strong> @Model.Description</p>
+
+            <!-- Kart detayları -->
+            <ul class="list-group list-group-flush">
+                @if (!User.IsInRole("User"))
+                {
+                    <li class="list-group-item d-flex align-items-center justify-content-between">
+                        <span><strong>Kullanıcı:</strong> @(string.IsNullOrEmpty(Model.UserName) ? "Atanmamış" : Model.UserName)</span>
+
+                        @if (string.IsNullOrEmpty(Model.UserName))
+                        {
+                            <!-- Kullanıcı Atama Formu -->
+                            <form asp-controller="Task" asp-action="AssignTask" method="post" class="d-flex align-items-center" style="margin: 0;">
+                                <!-- Gizli input: Task ID -->
+                                <input type="hidden" name="TaskId" value="@Model.Id" />
+
+                                <!-- SelectList -->
+                                <select id="userSelect" name="UserId" class="form-select mx-2" style="width: auto;" onchange="toggleAssignButton()">
+                                    <option disabled selected value="">-- Ata --</option>
+                                    @foreach (var item in ViewBag.UserSelectList as SelectList)
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                </select>
+
+                                <!-- Gönder Butonu -->
+                                <button id="assignButton" type="submit" class="btn btn-primary rounded-pill px-4" disabled>Ata</button>
+                            </form>
+                        }
+                    </li>
+
+                }
+                <li class="list-group-item"><strong>Durum:</strong> @(Model.IsCompleted ? "Tamamlandı" : "Devam Ediyor")</li>
+                <li class="list-group-item"><strong>Oluşturulma Tarihi:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy")</li>
+                <li class="list-group-item"><strong>Güncellenme Tarihi:</strong> @(Model.UpdatedAt.HasValue ? Model.UpdatedAt.Value.ToString("dd/MM/yyyy") : "Güncellenmedi")</li>
+                <li class="list-group-item"><strong>Bitiş Tarihi:</strong> @Model.EndDate.ToString("dd/MM/yyyy")</li>
+                <li class="list-group-item"><strong>Atanma Tarihi:</strong> @(Model.AssignedAt.HasValue ? Model.AssignedAt.Value.ToString("dd/MM/yyyy") : "Atanmadı")</li>
+            </ul>
+
+            <!-- İşaretle Butonları -->
+            @if (!Model.IsCompleted)
+            {
+                <form asp-controller="Task" asp-action="MarkAsCompleted" method="post" class="mt-5">
+                    <input type="hidden" name="taskId" value="@Model.Id" />
+                    <button type="submit" class="btn btn-success">Tamamlandı Olarak Değiştir</button>
+                </form>
+            }
+
+            @if (Model.IsCompleted)
+            {
+                <form asp-controller="Task" asp-action="MarkAsOngoing" method="post" class="mt-5">
+                    <input type="hidden" name="taskId" value="@Model.Id" />
+                    <button type="submit" class="btn btn-success">Devam Ediyor Olarak Değiştir</button>
+                </form>
+            }
+
+            <!-- Sağ Alt Butonlar -->
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="position-absolute bottom-0 end-0 p-3 d-flex gap-2">
+                    <!-- Sil Butonu -->
+                    <form asp-controller="Task" asp-action="DeleteTask" method="post" style="display:inline;">
+                        <input type="hidden" name="taskId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger rounded-pill px-4">Sil</button>
+                    </form>
+
+                    <!-- Düzenle Butonu -->
+                    <a href="@Url.Action("UpdateTask", "Task", new { taskId = Model.Id })" class="btn btn-warning">Düzenle</a>
+
+                </div>
+            }
+        </div>
+    </div>
+
+
+
+    <div class="mt-4" id="questionSection">
+        <div class="mt-4 mb-2 d-flex justify-content-between align-items-center">
+            @if (!User.IsInRole("User"))
+            {
+                <h4 class="mb-0">Sorular</h4>
+            }
+            else
+            {
+                <h4 class="mb-0">Sorularım</h4>
+                <button id="showQuestionForm" class="btn btn-primary">Soru Ekle</button>
+            }
+        </div>
+
+        <div id="questionForm" class="mb-3" style="display:none;">
+            <h5>Sorunuzu Ekleyin</h5>
+            <textarea id="questionContent" class="form-control" placeholder="Sorunuzu buraya yazın"></textarea>
+            <button id="submitQuestion" class="btn btn-success mt-2">Ekle</button>
+        </div>
+
+        @if (Model.Questions is not null && Model.Questions.Any())
+        {
+            <ul id="questionList" class="list-group">
+                @foreach (var question in Model.Questions)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Soru:</strong> @question.Content
+                            <br />
+                            <strong>Cevap:</strong>
+                            <span id="answer-@question.Id">
+                                @(string.IsNullOrEmpty(question.Answer) ? "( Henüz cevaplanmadı )" : question.Answer)
+                            </span>
+                        </div>
+
+                        @if (User.IsInRole("Admin") && string.IsNullOrEmpty(question.Answer))
+                        {
+                            <button class="btn btn-sm btn-outline-primary" onclick="showAnswerForm('@question.Id')">Cevapla</button>
+                        }
+
+                        <!-- Gizli cevap formu -->
+                        <div id="answerForm-@question.Id" class="mt-2" style="display:none;">
+                            <textarea id="answerContent-@question.Id" class="form-control" rows="2" placeholder="Cevabınızı buraya yazın"></textarea>
+                            <button class="btn btn-sm btn-success mt-2" onclick="submitAnswer('@question.Id')">Cevabı Gönder</button>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p id="noQuestionsMessage">
+                @if (!User.IsInRole("User"))
+                {
+                <p>Bu görevle ilgili soru bulunmamaktadır.</p>
+                }
+                else
+                {
+                <p>Bu görevle ilgili sorunuz bulunmamaktadır.</p>
+                }
+            </p>
+        }
+    </div>
+
+</div>
+
+<style>
+
+    .custom-alert-success {
+        position: fixed; /* Sayfada sabit konumlandırma */
+        top: 25px; /* Ekranın üst kısmından 10px boşluk */
+        left: 58%; /* Ekranın ortasına hizalama */
+        transform: translateX(-50%); /* Ortalamak için translate */
+        z-index: 1000; /* Diğer elementlerin üstünde görünmesini sağlar */
+        background-color: wheat; /* Arka plan rengi */
+        color: #6b4f3a; /* Yazı rengi (daha koyu bir ton) */
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-alert-error {
+        position: fixed; /* Sayfada sabit konumlandırma */
+        top: 25px; /* Ekranın üst kısmından 10px boşluk */
+        left: 58%; /* Ekranın ortasına hizalama */
+        transform: translateX(-50%); /* Ortalamak için translate */
+        z-index: 1000; /* Diğer elementlerin üstünde görünmesini sağlar */
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+        background-color: #121212; /* Siyah arka plan */
+        color: #ffffff; /* Genel metin rengi */
+        font-family: Arial, sans-serif;
+    }
+
+    .container {
+        max-width: 800px;
+    }
+
+    .card {
+        background-color: #1f1f1f; /* Koyu gri kart arka planı */
+        color: #ffffff;
+        border: 1px solid #444; /* Hafif bir kenarlık */
+    }
+
+    .card-title {
+        color: #f0f0f0; /* Başlık rengi */
+    }
+
+    .list-group-item {
+        background-color: #1f1f1f; /* Kart içindeki listelerin arka planı */
+        color: #ffffff;
+        border-color: #444; /* Listelerin kenarlığı */
+    }
+
+        .list-group-item strong {
+            color: #c5c5c5; /* Kalın metinlerin rengi */
+        }
+
+    h2, h4 {
+        color: #f0f0f0; /* Başlıklar için açık gri */
+    }
+
+    a {
+        color: #00adb5; /* Link rengi */
+    }
+
+        a:hover {
+            color: #00fff5; /* Link üzerine gelince rengi */
+            text-decoration: underline;
+        }
+
+    .mt-4 p {
+        color: #dcdcdc; /* Sorular bölümü için metin rengi */
+    }
+
+    .list-group {
+        border-radius: 10px; /* Kenar yumuşatma */
+    }
+
+    .btn {
+        font-weight: bold; /* Daha belirgin yazı */
+        transition: transform 0.2s ease-in-out; /* Hover animasyonu */
+    }
+
+        .btn:hover {
+            transform: scale(1.05); /* Hafif büyüme efekti */
+        }
+</style>
+
+<script>
+    function toggleAssignButton() {
+        const select = document.getElementById('userSelect');
+        const button = document.getElementById('assignButton');
+        button.disabled = select.value === "";
+    }
+
+    function showAnswerForm(questionId) {
+        // questionId'yi string olarak işleyin
+        var strQuestionId = String(questionId);
+
+        // Sadece ilgili soru için cevap formunu göster
+        var answerForm = document.getElementById("answerForm-" + strQuestionId);
+        // Bu butonu doğru bir şekilde bulmak için querySelector'u kullanıyoruz
+        var answerButton = document.querySelector(`button[onclick="showAnswerForm('${strQuestionId}')"]`);
+
+        if (answerForm) {
+            if (answerForm.style.display === "none" || answerForm.style.display === "") {
+                answerForm.style.display = "block";
+                // Buton yazısını "Vazgeç" olarak değiştir
+                if (answerButton) {
+                    answerButton.textContent = "Vazgeç";
+                }
+            } else {
+                answerForm.style.display = "none";
+                // Buton yazısını "Cevapla" olarak değiştir
+                if (answerButton) {
+                    answerButton.textContent = "Cevapla";
+                }
+            }
+        } else {
+            console.error("Cevap formu bulunamadı: ", strQuestionId);
+        }
+    }
+
+    // Cevap gönderme işlemi
+    async function submitAnswer(questionId) {
+        // questionId'yi string olarak işleyin
+        var strQuestionId = String(questionId);
+
+        var answerContent = document.getElementById("answerContent-" + strQuestionId).value.trim();
+
+        if (answerContent) {
+            try {
+                const response = await fetch('@Url.Action("ReplyQuestion", "Task")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ questionId: strQuestionId, reply: answerContent })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(result.message);
+
+                    // Cevabı ekrana güncelle
+                    document.getElementById("answer-" + strQuestionId).innerText = answerContent;
+                    // Cevap formunu gizle
+                    document.getElementById("answerForm-" + strQuestionId).style.display = "none";
+                } else {
+                    const errorMessage = await response.text();
+                    alert("Hata: " + errorMessage);
+                }
+            } catch (error) {
+                console.error("Hata:", error);
+                alert("Bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
+            }
+        } else {
+            alert("Lütfen bir cevap girin.");
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // "Soru Ekle" butonuna tıklandığında formu göster
+        var showQuestionFormButton = document.getElementById("showQuestionForm");
+        if (showQuestionFormButton) {
+            showQuestionFormButton.addEventListener("click", function () {
+                document.getElementById("questionForm").style.display = "block";
+            });
+        }
+
+        // "Soru Ekle" formunu gönderme
+        var submitQuestionButton = document.getElementById("submitQuestion");
+        if (submitQuestionButton) {
+            submitQuestionButton.addEventListener("click", async function () {
+                var questionContent = document.getElementById("questionContent").value.trim();
+
+                if (questionContent) {
+                    var taskId = "@Model.Id";  // ID'yi string olarak alın
+                    var userId = "@Model.UserId";
+                    try {
+                        const response = await fetch('@Url.Action("AddQuestion", "Task")', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ taskId: taskId, content: questionContent, userId: userId })
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            alert(result.message);
+
+                            try {
+                                // Yeni soruyu listeye ekleme işlemi
+                                var questionList = document.getElementById("questionList");
+
+                                // Liste mevcut değilse oluştur
+                                if (!questionList) {
+                                    questionList = document.createElement("ul");
+                                    questionList.id = "questionList";
+                                    questionList.className = "list-group";
+
+                                    // Listeyi uygun yere ekleyelim
+                                    var questionSection = document.getElementById("questionSection");
+                                    questionSection.appendChild(questionList);
+
+                                    // Var olan "noQuestionsMessage" varsa, onu gizleyelim
+                                    var noQuestionsMessage = document.getElementById("noQuestionsMessage");
+                                    if (noQuestionsMessage) {
+                                        noQuestionsMessage.style.display = "none";
+                                    }
+                                }
+
+                                var newQuestionItem = document.createElement("li");
+                                newQuestionItem.className = "list-group-item d-flex justify-content-between align-items-center";
+                                newQuestionItem.innerHTML = `
+                                <div>
+                                    <strong>Soru:</strong> ${questionContent}
+                                    <br />
+                                    <strong>Cevap:</strong> <span>( Henüz cevaplanmadı )</span>
+                                </div>
+                            `;
+                                questionList.appendChild(newQuestionItem);
+
+                                // Formu temizle ve gizle
+                                document.getElementById("questionContent").value = "";
+                                document.getElementById("questionForm").style.display = "none";
+                            } catch (domError) {
+                                console.error("DOM güncellenirken bir hata oluştu:", domError);
+                                alert("Soru eklendi ancak listeye eklenirken bir hata oluştu.");
+                            }
+
+                        } else {
+                            const errorMessage = await response.text(); // Hata mesajını oku
+                            alert(errorMessage); // Hata mesajını göster
+                        }
+                    } catch (error) {
+                        console.error("Fetch isteği sırasında bir hata oluştu:", error);
+                        alert("Bir hata oluştu. Lütfen daha sonra tekrar deneyin.");
+                    }
+                } else {
+                    alert("Lütfen bir soru girin.");
+                }
+            });
+        }
+
+    });
+</script>
+

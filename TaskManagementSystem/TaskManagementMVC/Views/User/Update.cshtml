@@ -1,0 +1,83 @@
+﻿@model UserDetailsDto
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Kullanıcı Detayları</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-controller="User" asp-action="UpdateUser" method="post">
+                        <!-- Hidden input for ID -->
+                        <input type="hidden" name="Id" value="@Model.Id" />
+
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th scope="row" class="text-muted">E-posta:</th>
+                                    <td>@Model.Email</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-muted">Kullanıcı Adı:</th>
+                                    <td>@Model.Username</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-muted">Ad:</th>
+                                    <td>
+                                        <input type="text" style="color:white;" class="form-control" name="Firstname" value="@Model.Firstname" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-muted">Soyad:</th>
+                                    <td>
+                                        <input type="text" style="color:white;" class="form-control" name="Lastname" value="@Model.Lastname" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-muted">Rol:</th>
+                                    <td>@Model.Role</td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="text-muted">Oluşturulma Tarihi:</th>
+                                    <td>@Model.CreatedAt.ToString("dd MMMM yyyy, HH:mm")</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-primary">Kaydet</button>
+                    </form>
+                </div>
+
+                <div class="card-footer text-center">
+                    <a href="/user-details/@Model.Id" class="btn btn-secondary btn-sm">Geri Dön</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .card-header {
+        font-weight: bold;
+        letter-spacing: 0.5px;
+    }
+
+    .table th {
+        width: 35%;
+    }
+
+    .table td {
+        font-weight: 500;
+    }
+
+    .btn-sm {
+        margin-right: 5px;
+    }
+</style>
