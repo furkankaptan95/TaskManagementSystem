@@ -107,4 +107,19 @@ public class UserController : Controller
         TempData["success"] = result.Message;
         return Redirect($"/user-details/{updateUserDto.Id}");
     }
+
+    [HttpPost]
+    public async Task<IActionResult> ChangeRole([FromForm] UpdateRoleDto updateRoleDto)
+    {
+        var result = await _userService.UpdateRoleAsync(updateRoleDto);
+
+        if (!result.IsSuccess)
+        {
+            TempData["error"] = result.Message;
+            return Redirect($"/user-details/{updateRoleDto.UserId}");
+        }
+
+        TempData["success"] = result.Message;
+        return Redirect($"/user-details/{updateRoleDto.UserId}");
+    }
 }

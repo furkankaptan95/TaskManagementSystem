@@ -78,6 +78,20 @@ public class UserService : IUserService
         return new ServiceResult<UserDetailsDto>(false);
     }
 
+    public async Task<ServiceResult> UpdateRoleAsync(UpdateRoleDto dto)
+    {
+        var apiResponse = await UserApiClient.PutAsJsonAsync("update-role", dto);
+
+        var result = await apiResponse.Content.ReadAsStringAsync();
+
+        if (apiResponse.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, result);
+        }
+
+        return new ServiceResult(false, result);
+    }
+
     public async Task<ServiceResult> UpdateUserAsync(UpdateUserDto dto)
     {
         var apiResponse = await UserApiClient.PutAsJsonAsync("update", dto);
