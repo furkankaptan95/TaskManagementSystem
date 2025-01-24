@@ -10,7 +10,7 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 builder.Services.AddSingleton<MongoDbService>();
 
 // UserService'i ekliyoruz
-builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<IUserService,UserService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -11,7 +11,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace AuthAPI.Services;
-public class AuthService
+public class AuthService : IAuthService
 {
     private readonly IConfiguration _configuration;
     private readonly IHttpContextAccessor _httpContextAccessor;

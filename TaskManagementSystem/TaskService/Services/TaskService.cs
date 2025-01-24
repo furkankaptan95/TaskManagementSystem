@@ -5,7 +5,7 @@ using TaskAPI.DTOs;
 
 namespace TaskAPI.Services;
 
-public class TaskService
+public class TaskService : ITaskService
 {
     private readonly MongoDbService _mongoDbService;
 
@@ -170,6 +170,7 @@ public class TaskService
         }
 
         await _mongoDbService.DeleteTaskAsync(id);
+        return;
     }
 
     public async Task<List<AllTasksDto>> GetTasksByUserIdAsync(string userId)

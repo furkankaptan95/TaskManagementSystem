@@ -7,7 +7,7 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 
 // MongoDbService servisini ekliyoruz
 builder.Services.AddSingleton<MongoDbService>();
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
