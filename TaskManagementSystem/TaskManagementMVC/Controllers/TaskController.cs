@@ -73,20 +73,21 @@ public class TaskController : Controller
     [HttpPost]
     public async Task<IActionResult> Add([FromForm] AddTaskDto model )
     {
-        var usersResult = await _taskService.GetAllUsersAsync();
-
-        if (!usersResult.IsSuccess)
-        {
-            return Redirect("/");
-        }
-
-        var users = usersResult.Data;
-
-        var userSelectList = new SelectList(users, "Id", "Username");
-        ViewBag.UserSelectList = userSelectList;
 
         if (!ModelState.IsValid)
         {
+            var usersResult = await _taskService.GetAllUsersAsync();
+
+            if (!usersResult.IsSuccess)
+            {
+                return Redirect("/");
+            }
+
+            var users = usersResult.Data;
+
+            var userSelectList = new SelectList(users, "Id", "Username");
+            ViewBag.UserSelectList = userSelectList;
+
             ViewData["error"] = "Lütfen form verilerini istenen biçimde doldurunuz!..";
             return View(model);
         }
@@ -95,12 +96,24 @@ public class TaskController : Controller
 
         if (!result.IsSuccess)
         {
+            var usersResult = await _taskService.GetAllUsersAsync();
+
+            if (!usersResult.IsSuccess)
+            {
+                return Redirect("/");
+            }
+
+            var users = usersResult.Data;
+
+            var userSelectList = new SelectList(users, "Id", "Username");
+            ViewBag.UserSelectList = userSelectList;
+
             ViewData["error"] = result.Message;
             return View(model);
         }
 
-        ViewData["success"] = result.Message;
-        return View();
+        TempData["success"] = result.Message;
+        return RedirectToAction(nameof(All));
     }
 
     [Authorize]
