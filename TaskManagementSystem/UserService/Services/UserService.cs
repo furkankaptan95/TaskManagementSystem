@@ -4,7 +4,7 @@ using UserAPI.DTOs;
 using UserAPI.Entities;
 
 namespace UserAPI.Services;
-public class UserService
+public class UserService : IUserService
 {
     private readonly MongoDbService _mongoDbService;
     public UserService(MongoDbService mongoDbService)
@@ -51,7 +51,6 @@ public class UserService
         };
 
         return new ServiceResult<SingleUserDto>(true, null, dto);
-
     }
     public async Task<ServiceResult> UpdateUserAsync(UpdateUserDto dto)
     {

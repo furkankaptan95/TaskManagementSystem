@@ -170,6 +170,7 @@ public class TaskService : ITaskService
         }
 
         await _mongoDbService.DeleteTaskAsync(id);
+        return;
     }
 
     public async Task<List<AllTasksDto>> GetTasksByUserIdAsync(string userId)
