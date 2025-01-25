@@ -46,6 +46,7 @@ public static class ServicesRegistration
 
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
 
