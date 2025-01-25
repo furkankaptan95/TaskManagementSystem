@@ -30,4 +30,25 @@ public class AuthService : IAuthService
 
         return new ServiceResult<TokensDto>(false,result);
     }
+
+    public async Task<ServiceResult<TokensDto>> RefreshTokenAsync(string token)
+    {
+        var response = await AuthApiClient.PostAsJsonAsync("refresh-token", token);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var successResult = await response.Content.ReadFromJsonAsync<ServiceResult<TokensDto>>();
+
+            if (successResult is null)
+            {
+                return new ServiceResult<TokensDto>(false);
+            }
+
+            return successResult;
+        }
+
+        var result = await response.Content.ReadAsStringAsync();
+
+        return new ServiceResult<TokensDto>(false,result);
+    }
 }
