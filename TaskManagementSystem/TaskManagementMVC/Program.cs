@@ -1,4 +1,3 @@
-using TaskManagementMVC.Middleware;
 using TaskManagementMVC.Services;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -9,6 +9,8 @@ public static class ServicesRegistration
 {
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddHttpContextAccessor(); // HttpContext erişimi için gerekli
+        services.AddTransient<JwtAndRefreshTokenHandler>(); // Handler'ı DI sistemine ekle
         AddJwtAuth(services, configuration);
         services.AddControllersWithViews();
 
@@ -22,7 +24,7 @@ public static class ServicesRegistration
         services.AddHttpClient("taskApi", c =>
         {
             c.BaseAddress = new Uri(taskApiUrl);
-        });
+        }).AddHttpMessageHandler<JwtAndRefreshTokenHandler>();
 
         var userApiUrl = configuration.GetValue<string>("UserApiUrl");
 
@@ -34,7 +36,7 @@ public static class ServicesRegistration
         services.AddHttpClient("userApi", c =>
         {
             c.BaseAddress = new Uri(userApiUrl);
-        });
+        }).AddHttpMessageHandler<JwtAndRefreshTokenHandler>();
 
         var authApiUrl = configuration.GetValue<string>("AuthApiUrl");
 
@@ -46,7 +48,7 @@ public static class ServicesRegistration
         services.AddHttpClient("authApi", c =>
         {
             c.BaseAddress = new Uri(authApiUrl);
-        });
+        }).AddHttpMessageHandler<JwtAndRefreshTokenHandler>();
 
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IUserService, UserService>();
@@ -108,6 +110,7 @@ public static class ServicesRegistration
                             {
                                 HttpOnly = true,
                                 Secure = true,
+                                SameSite = SameSiteMode.Strict,
                                 Expires = DateTime.UtcNow.AddMinutes(10)
                             });
 
@@ -115,6 +118,7 @@ public static class ServicesRegistration
                             {
                                 HttpOnly = true,
                                 Secure = true,
+                                SameSite = SameSiteMode.Strict,
                                 Expires = DateTime.UtcNow.AddDays(7)
                             });
 
