@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using TaskAPI.DTOs;
 using TaskAPI.Services;
@@ -16,6 +17,7 @@ public class TaskController : ControllerBase
         _taskService = taskService;
     }
 
+    [Authorize]
     [HttpGet("all")]
     public async Task<IActionResult> GetAll()
     {
@@ -24,6 +26,7 @@ public class TaskController : ControllerBase
         return Ok(taskDtos);
     }
 
+    [Authorize]
     [HttpGet("{taskId}")]
     public async Task<IActionResult> GetById([FromRoute] string taskId)
     {
@@ -42,6 +45,7 @@ public class TaskController : ControllerBase
         return Ok(result.Data);
     }
 
+    [Authorize(Roles ="Admin")]
     [HttpPost("add")]
     public async Task<IActionResult> Add([FromBody] AddTaskDto addDto)
     {
@@ -55,6 +59,7 @@ public class TaskController : ControllerBase
         return Ok(result.Message);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("update")]
     public async Task<IActionResult> Update([FromBody] UpdateTaskDto updateTaskDto)
     {
@@ -68,6 +73,7 @@ public class TaskController : ControllerBase
         return Ok(result.Message);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("delete/{taskId}")]
     public async Task<IActionResult> Delete([FromRoute] string taskId)
     {
@@ -81,6 +87,7 @@ public class TaskController : ControllerBase
         return Ok("Task deleted successfully.");
     }
 
+    [Authorize]
     [HttpGet("user-tasks/{userId}")]
     public async Task<IActionResult> GetByUserId([FromRoute] string userId)
     {
@@ -94,6 +101,7 @@ public class TaskController : ControllerBase
         return Ok(userTasks);
     }
 
+    [Authorize]
     [HttpPut("status")]
     public async Task<IActionResult> ChangeStatus([FromBody] string taskId)
     {
@@ -112,6 +120,7 @@ public class TaskController : ControllerBase
         return Ok(result.Message);
     }
 
+    [Authorize(Roles = "User")]
     [HttpPost("add-question")]
     public async Task<IActionResult> AddQuestion([FromBody] AddQuestionDto addQuestionDto)
     {
@@ -125,6 +134,7 @@ public class TaskController : ControllerBase
         return Ok(result.Message);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("reply-question")]
     public async Task<IActionResult> ReplyQuestion([FromBody] ReplyQuestionDto replyQuestionDto)
     {
@@ -138,6 +148,7 @@ public class TaskController : ControllerBase
         return Ok(result.Message);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("assign")]
     public async Task<IActionResult> AssignTaskToUser([FromBody] AssignTaskDto assignDto)
     {

@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Reflection;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskManagementMVC.DTOs;
 using TaskManagementMVC.Services.Abstract;
 
@@ -12,6 +12,7 @@ public class UserController : Controller
         _userService = userService;
     }
 
+    [Authorize(Roles ="Admin")]
     [HttpGet]
     public async Task<IActionResult> All()
     {
@@ -27,12 +28,14 @@ public class UserController : Controller
         return View(result.Data);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public IActionResult Add()
     {
         return View();
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> Add(AddUserDto model)
     {
@@ -48,6 +51,7 @@ public class UserController : Controller
         return View();
     }
 
+    [Authorize]
     [HttpGet("user-details/{userId}")]
     public async Task<IActionResult> UserDetails([FromRoute] string userId)
     {
@@ -63,6 +67,7 @@ public class UserController : Controller
         return View(user);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> DeleteUser([FromQuery] string userId)
     {
@@ -78,6 +83,7 @@ public class UserController : Controller
         return RedirectToAction("All");
     }
 
+    [Authorize]
     [HttpGet("edit-user/{userId}")]
     public async Task<IActionResult> Update([FromRoute] string userId)
     {
@@ -93,6 +99,7 @@ public class UserController : Controller
         return View(user);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> UpdateUser([FromForm] UpdateUserDto updateUserDto)
     {
@@ -108,6 +115,7 @@ public class UserController : Controller
         return Redirect($"/user-details/{updateUserDto.Id}");
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     public async Task<IActionResult> ChangeRole([FromForm] UpdateRoleDto updateRoleDto)
     {

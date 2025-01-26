@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using UserAPI.DTOs;
 using UserAPI.Services;
@@ -15,6 +16,7 @@ public class UserController : ControllerBase
         _userService = userService;
     }
 
+    [Authorize(Roles ="Admin")]
     [HttpGet("all")]
     public async Task<IActionResult> GetAll()
     {
@@ -23,6 +25,7 @@ public class UserController : ControllerBase
         return Ok(userDtos);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("{userId}")]
     public async Task<IActionResult> GetById([FromRoute] string userId)
     {
@@ -41,6 +44,7 @@ public class UserController : ControllerBase
         return Ok(result.Data);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("update")]
     public async Task<IActionResult> Update([FromBody] UpdateUserDto dto)
     {
@@ -59,6 +63,7 @@ public class UserController : ControllerBase
         return Ok(result.Message);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("update-role")]
     public async Task<IActionResult> UpdateUserRole([FromBody] UpdateRoleDto dto)
     {
@@ -77,6 +82,7 @@ public class UserController : ControllerBase
         return Ok(result.Message);
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("delete/{userId}")]
     public async Task<IActionResult> Delete([FromRoute] string userId)
     {

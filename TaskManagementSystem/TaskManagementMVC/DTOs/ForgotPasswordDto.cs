@@ -1,4 +1,4 @@
-﻿namespace AuthAPI.DTOs;
+﻿namespace TaskManagementMVC.DTOs;
 public class ForgotPasswordDto
 {
     public string Email { get; set; }
