@@ -61,6 +61,7 @@ public class AuthController : Controller
     {
         return View();
     }
+
     [HttpPost]
     public async Task<IActionResult> ForgotPassword([FromForm] ForgotPasswordDto dto)
     {

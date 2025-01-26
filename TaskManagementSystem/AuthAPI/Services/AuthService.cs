@@ -82,7 +82,7 @@ public class AuthService : IAuthService
 
         if (user == null)
         {
-            return new ServiceResult<TokensDto>(false, "User not found.");
+            return new ServiceResult<TokensDto>(false, "Wrong Email or Password!");
         }
 
         if(user.IsActive is false)
@@ -92,7 +92,7 @@ public class AuthService : IAuthService
 
         if (!HashingHelper.VerifyPasswordHash(dto.Password, user.PasswordHash, user.PasswordSalt))
         {
-            return new ServiceResult<TokensDto>(false, "Wrong password.");
+            return new ServiceResult<TokensDto>(false, "Wrong Email or Password!");
         }
 
         var filter = Builders<RefreshTokenEntity>.Filter.Eq(token => token.UserId, user.Id.ToString());
