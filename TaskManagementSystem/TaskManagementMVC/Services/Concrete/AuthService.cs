@@ -10,6 +10,20 @@ public class AuthService : IAuthService
         _factory = factory;
     }
     private HttpClient AuthApiClient => _factory.CreateClient("authApi");
+
+    public async Task<ServiceResult> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto)
+    {
+        var response = await AuthApiClient.PostAsJsonAsync("forgot-password", forgotPasswordDto);
+        if (response.IsSuccessStatusCode)
+        {
+            var successMessage = await response.Content.ReadAsStringAsync();
+            return new ServiceResult(true, successMessage);
+        }
+
+        var errorMessage = await response.Content.ReadAsStringAsync();
+        return new ServiceResult(false, errorMessage);
+    }
+
     public async Task<ServiceResult<TokensDto>> LoginAsync(LoginDto loginDto)
     {
         var apiResponse = await AuthApiClient.PostAsJsonAsync("login", loginDto);

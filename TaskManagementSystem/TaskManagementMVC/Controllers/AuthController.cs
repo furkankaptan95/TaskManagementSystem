@@ -55,4 +55,23 @@ public class AuthController : Controller
 
         return Redirect("/");
     }
+
+    [HttpGet]
+    public IActionResult ForgotPassword()
+    {
+        return View();
+    }
+    [HttpPost]
+    public async Task<IActionResult> ForgotPassword([FromForm] ForgotPasswordDto dto)
+    {
+        var result = await _authService.ForgotPasswordAsync(dto);
+        if (!result.IsSuccess)
+        {
+            ViewData["error"] = result.Message;
+            return View(dto);
+        }
+
+        ViewData["success"] = result.Message;
+        return View();
+    }
 }
