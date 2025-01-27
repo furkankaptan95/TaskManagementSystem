@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiGateway", "ApiGateway\Ap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthAPI", "AuthAPI\AuthAPI.csproj", "{592F9181-C47C-45B5-BCC3-D02E43EA08CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TaskManagementMVC", "TaskManagementMVC\TaskManagementMVC.csproj", "{E14C0D34-5963-42EE-8B2E-5A8893F01FDA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TaskManagementMVC", "TaskManagementMVC\TaskManagementMVC.csproj", "{E14C0D34-5963-42EE-8B2E-5A8893F01FDA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailAPI", "EmailAPI\EmailAPI.csproj", "{CE85B312-CE7D-4F85-ACE2-11E0839909B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{E14C0D34-5963-42EE-8B2E-5A8893F01FDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E14C0D34-5963-42EE-8B2E-5A8893F01FDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E14C0D34-5963-42EE-8B2E-5A8893F01FDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE85B312-CE7D-4F85-ACE2-11E0839909B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE85B312-CE7D-4F85-ACE2-11E0839909B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE85B312-CE7D-4F85-ACE2-11E0839909B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE85B312-CE7D-4F85-ACE2-11E0839909B7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
