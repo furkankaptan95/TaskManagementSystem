@@ -9,6 +9,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using static System.Net.WebRequestMethods;
 
 namespace AuthAPI.Services;
 public class AuthService : IAuthService
@@ -16,12 +17,14 @@ public class AuthService : IAuthService
     private readonly IConfiguration _configuration;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly MongoDbService _mongoDbService;
-
-    public AuthService(MongoDbService mongoDbService, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
+    private readonly IHttpClientFactory _factory;
+    private HttpClient EmailApiClient => _factory.CreateClient("emailApi");
+    public AuthService(IHttpClientFactory factory,MongoDbService mongoDbService, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
     {
         _mongoDbService = mongoDbService;
         _httpContextAccessor = httpContextAccessor;
         _configuration = configuration;
+        _factory = factory;
     }
 
     public async Task<RegistrationResult> RegisterAsync(RegisterDto dto)
@@ -242,6 +245,24 @@ public class AuthService : IAuthService
         };
 
         await _mongoDbService.CreateUserVerificationAsync(forgotPasswordEntity);
+
+        var verificationLink = $"https://localhost:7199/renew-password?email={forgotPasswordDto.Email}&token={token}";
+
+        var htmlMailBody = $"<h1>Lütfen Email adresinizi doğrulayın!</h1><a href='{verificationLink}'>Şifrenizi sıfırlamak için tıklayınız.</a>";
+
+        var emailRequest = new EmailRequest
+        {
+            Body = htmlMailBody,
+            Subject = "Lütfen email adresinizi doğrulayın.",
+            To = forgotPasswordDto.Email,
+        };
+
+        var emailResult = await EmailApiClient.PostAsJsonAsync("send", emailRequest);
+
+        if (!emailResult.IsSuccessStatusCode)
+        {
+            return new ServiceResult(false, "Something wrong happened.");
+        }
 
         return new ServiceResult(true, "Please check your Email to renew your password.");
     }
