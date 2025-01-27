@@ -102,4 +102,19 @@ public class AuthController : Controller
             return View(model);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> RenewPasswordPost([FromForm] NewPasswordDto dto )
+    {
+        var result = await _authService.NewPasswordAsync(dto);
+
+        if (result.IsSuccess)
+        {
+            TempData["success"] = result.Message;
+            return RedirectToAction(nameof(Login));
+        }
+
+        TempData["error"] = result.Message;
+        return RedirectToAction(nameof(ForgotPassword));
+    }
+
 }

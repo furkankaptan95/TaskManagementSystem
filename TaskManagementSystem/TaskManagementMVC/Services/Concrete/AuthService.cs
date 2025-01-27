@@ -45,6 +45,20 @@ public class AuthService : IAuthService
         return new ServiceResult<TokensDto>(false,result);
     }
 
+    public async Task<ServiceResult> NewPasswordAsync(NewPasswordDto dto)
+    {
+        var response = await AuthApiClient.PostAsJsonAsync("new-password", dto);
+
+        var resultMessage = await response.Content.ReadAsStringAsync();
+
+        if (response.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, resultMessage);
+        }
+
+        return new ServiceResult(false, resultMessage);
+    }
+
     public async Task<ServiceResult<TokensDto>> RefreshTokenAsync(string token)
     {
         var response = await AuthApiClient.PostAsJsonAsync("refresh-token", token);

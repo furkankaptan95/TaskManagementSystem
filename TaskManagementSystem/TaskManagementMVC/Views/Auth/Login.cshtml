@@ -17,6 +17,20 @@
             @ViewData["error"]
         </div>
     }
+
+    if (TempData["success"] is not null)
+    {
+        <div class="alert custom-alert-success mt-5">
+            @TempData["success"]
+        </div>
+    }
+
+    if (TempData["error"] is not null)
+    {
+        <div class="alert custom-alert-error mt-5">
+            @TempData["error"]
+        </div>
+    }
 }
 
 <!DOCTYPE html>
