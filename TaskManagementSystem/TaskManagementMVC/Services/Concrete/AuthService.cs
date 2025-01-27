@@ -65,4 +65,17 @@ public class AuthService : IAuthService
 
         return new ServiceResult<TokensDto>(false,result);
     }
+
+    public async Task<ServiceResult<string>> RenewPasswordEmailAsync(RenewPasswordDto dto)
+    {
+          var response = await AuthApiClient.PostAsJsonAsync("renew-password-verify", dto);
+          var result = await response.Content.ReadFromJsonAsync<ServiceResult<string>>();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new ServiceResult<string>(false,result.Message);
+            }
+
+        return result;
+    }
 }

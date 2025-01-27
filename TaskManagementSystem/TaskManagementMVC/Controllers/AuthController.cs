@@ -75,4 +75,31 @@ public class AuthController : Controller
         ViewData["success"] = result.Message;
         return View();
     }
+
+
+    [HttpGet("renew-password")]
+    public async Task<IActionResult> RenewPassword([FromQuery] string email, string token)
+    {
+       
+            var dto = new RenewPasswordDto(email, token);
+
+            var result = await _authService.RenewPasswordEmailAsync(dto);
+
+            if (!result.IsSuccess)
+            {
+                TempData["error"] = result.Message;
+                return RedirectToAction(nameof(ForgotPassword));
+            }
+
+            ViewData["success"] = result.Message;
+
+            var model = new NewPasswordDto
+            {
+                Token = result.Data,
+                Email = email
+            };
+
+            return View(model);
+    }
+
 }
