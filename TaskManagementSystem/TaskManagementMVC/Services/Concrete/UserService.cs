@@ -16,7 +16,7 @@ public class UserService : IUserService
 
     public async Task<ServiceResult> AddUserAsync(AddUserDto dto)
     {
-        var apiResponse = await AuthApiClient.PostAsJsonAsync("register", dto);
+        var apiResponse = await AuthApiClient.PostAsJsonAsync("create-user", dto);
 
         var result = await apiResponse.Content.ReadAsStringAsync();
 

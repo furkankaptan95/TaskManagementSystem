@@ -16,12 +16,14 @@ public class AuthService : IAuthService
     private readonly IConfiguration _configuration;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly MongoDbService _mongoDbService;
-
-    public AuthService(MongoDbService mongoDbService, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
+    private readonly IHttpClientFactory _factory;
+    private HttpClient EmailApiClient => _factory.CreateClient("emailApi");
+    public AuthService(IHttpClientFactory factory,MongoDbService mongoDbService, IHttpContextAccessor httpContextAccessor, IConfiguration configuration)
     {
         _mongoDbService = mongoDbService;
         _httpContextAccessor = httpContextAccessor;
         _configuration = configuration;
+        _factory = factory;
     }
 
     public async Task<RegistrationResult> RegisterAsync(RegisterDto dto)
@@ -73,6 +75,48 @@ public class AuthService : IAuthService
         await _mongoDbService.CreateUserVerificationAsync(userVerification);
 
         return new RegistrationResult(true, "Registered successfully. Please visit your Email to verif your account.", RegistrationError.None);
+    }
+
+    public async Task<RegistrationResult> CreateUserAsync(RegisterDto dto)
+    {
+        var emailFilter = Builders<UserEntity>.Filter.Eq(user => user.Email, dto.Email);
+        var usernameFilter = Builders<UserEntity>.Filter.Eq(user => user.Username, dto.Username);
+
+        var isEmailAlreadyTaken = await _mongoDbService.GetUserAsync(emailFilter);
+        var isUsernameAlreadyTaken = await _mongoDbService.GetUserAsync(usernameFilter);
+
+        if (isEmailAlreadyTaken is not null && isUsernameAlreadyTaken is not null)
+        {
+            return new RegistrationResult(false, "Email and Username already taken!", RegistrationError.BothTaken);
+        }
+
+        else if (isEmailAlreadyTaken is null && isUsernameAlreadyTaken is not null)
+        {
+            return new RegistrationResult(false, "Username already taken!", RegistrationError.UsernameTaken);
+        }
+
+        else if (isEmailAlreadyTaken is not null && isUsernameAlreadyTaken is null)
+        {
+            return new RegistrationResult(false, "Email already taken!", RegistrationError.EmailTaken);
+        }
+
+        var userEntity = new UserEntity();
+
+        byte[] passwordHash, passwordSalt;
+
+        HashingHelper.CreatePasswordHash(dto.Password, out passwordHash, out passwordSalt);
+
+        userEntity.Email = dto.Email;
+        userEntity.Username = dto.Username;
+        userEntity.Firstname = dto.Firstname;
+        userEntity.Lastname = dto.Lastname;
+        userEntity.PasswordHash = passwordHash;
+        userEntity.PasswordSalt = passwordSalt;
+        userEntity.IsActive = true;
+
+        await _mongoDbService.CreateUserAsync(userEntity);
+
+        return new RegistrationResult(true, "User created successfully", RegistrationError.None);
     }
 
     public async Task<ServiceResult<TokensDto>> LoginAsync(LoginDto dto)
@@ -242,6 +286,24 @@ public class AuthService : IAuthService
         };
 
         await _mongoDbService.CreateUserVerificationAsync(forgotPasswordEntity);
+
+        var verificationLink = $"https://localhost:7199/renew-password?email={forgotPasswordDto.Email}&token={token}";
+
+        var htmlMailBody = $"<h1>Lütfen Email adresinizi doğrulayın!</h1><a href='{verificationLink}'>Şifrenizi sıfırlamak için tıklayınız.</a>";
+
+        var emailRequest = new EmailRequest
+        {
+            Body = htmlMailBody,
+            Subject = "Lütfen email adresinizi doğrulayın.",
+            To = forgotPasswordDto.Email,
+        };
+
+        var emailResult = await EmailApiClient.PostAsJsonAsync("send", emailRequest);
+
+        if (!emailResult.IsSuccessStatusCode)
+        {
+            return new ServiceResult(false, "Something wrong happened.");
+        }
 
         return new ServiceResult(true, "Please check your Email to renew your password.");
     }

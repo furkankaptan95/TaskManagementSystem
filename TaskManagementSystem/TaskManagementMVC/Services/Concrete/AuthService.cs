@@ -1,4 +1,5 @@
-﻿using TaskManagementMVC.DTOs;
+﻿using System.Net;
+using TaskManagementMVC.DTOs;
 using TaskManagementMVC.Services.Abstract;
 
 namespace TaskManagementMVC.Services.Concrete;
@@ -45,6 +46,20 @@ public class AuthService : IAuthService
         return new ServiceResult<TokensDto>(false,result);
     }
 
+    public async Task<ServiceResult> NewPasswordAsync(NewPasswordDto dto)
+    {
+        var response = await AuthApiClient.PostAsJsonAsync("new-password", dto);
+
+        var resultMessage = await response.Content.ReadAsStringAsync();
+
+        if (response.IsSuccessStatusCode)
+        {
+            return new ServiceResult(true, resultMessage);
+        }
+
+        return new ServiceResult(false, resultMessage);
+    }
+
     public async Task<ServiceResult<TokensDto>> RefreshTokenAsync(string token)
     {
         var response = await AuthApiClient.PostAsJsonAsync("refresh-token", token);
@@ -64,5 +79,37 @@ public class AuthService : IAuthService
         var result = await response.Content.ReadAsStringAsync();
 
         return new ServiceResult<TokensDto>(false,result);
+    }
+
+    public async Task<ServiceResult<string>> RenewPasswordEmailAsync(RenewPasswordDto dto)
+    {
+          var response = await AuthApiClient.PostAsJsonAsync("renew-password-verify", dto);
+          var result = await response.Content.ReadFromJsonAsync<ServiceResult<string>>();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return new ServiceResult<string>(false,result.Message);
+            }
+
+        return result;
+    }
+
+    public async Task<ServiceResult> RevokeTokenAsync(string token)
+    {
+        try
+        {
+            var response = await AuthApiClient.PostAsJsonAsync("revoke-token", token);
+
+            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new ServiceResult(true,"Hesabınızdan başarıyla çıkış yapıldı.");
+            }
+
+            return new ServiceResult(false,"Hesabınızdan çıkış yapılırken bir problemle karşılaşıldı.");
+        }
+        catch (Exception)
+        {
+            return new ServiceResult(false, "Hesabınızdan çıkış yapılırken bir problemle karşılaşıldı.");
+        }
     }
 }

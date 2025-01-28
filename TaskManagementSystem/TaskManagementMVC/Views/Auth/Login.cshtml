@@ -17,6 +17,20 @@
             @ViewData["error"]
         </div>
     }
+
+    if (TempData["success"] is not null)
+    {
+        <div class="alert custom-alert-success mt-5">
+            @TempData["success"]
+        </div>
+    }
+
+    if (TempData["error"] is not null)
+    {
+        <div class="alert custom-alert-error mt-5">
+            @TempData["error"]
+        </div>
+    }
 }
 
 <!DOCTYPE html>
@@ -87,7 +101,7 @@
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
                             <div class="d-flex align-items-center justify-content-between mb-4">
-                                <a href="#">Şifrenizi mi unuttunuz?</a>
+                                <a href="/Auth/ForgotPassword">Şifrenizi mi unuttunuz?</a>
                             </div>
                             <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Giriş Yap</button>
                         </form>
