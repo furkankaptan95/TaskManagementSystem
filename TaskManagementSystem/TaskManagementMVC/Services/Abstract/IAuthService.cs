@@ -8,4 +8,5 @@ public interface IAuthService
     Task<ServiceResult> ForgotPasswordAsync(ForgotPasswordDto forgotPasswordDto);
     Task<ServiceResult<string>> RenewPasswordEmailAsync(RenewPasswordDto dto);
     Task<ServiceResult> NewPasswordAsync(NewPasswordDto dto);
+    Task<ServiceResult> RevokeTokenAsync(string token);
 }

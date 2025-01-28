@@ -1,4 +1,5 @@
-﻿using TaskManagementMVC.DTOs;
+﻿using System.Net;
+using TaskManagementMVC.DTOs;
 using TaskManagementMVC.Services.Abstract;
 
 namespace TaskManagementMVC.Services.Concrete;
@@ -91,5 +92,24 @@ public class AuthService : IAuthService
             }
 
         return result;
+    }
+
+    public async Task<ServiceResult> RevokeTokenAsync(string token)
+    {
+        try
+        {
+            var response = await AuthApiClient.PostAsJsonAsync("revoke-token", token);
+
+            if (response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return new ServiceResult(true,"Hesabınızdan başarıyla çıkış yapıldı.");
+            }
+
+            return new ServiceResult(false,"Hesabınızdan çıkış yapılırken bir problemle karşılaşıldı.");
+        }
+        catch (Exception)
+        {
+            return new ServiceResult(false, "Hesabınızdan çıkış yapılırken bir problemle karşılaşıldı.");
+        }
     }
 }

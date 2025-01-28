@@ -117,4 +117,34 @@ public class AuthController : Controller
         return RedirectToAction(nameof(ForgotPassword));
     }
 
+
+    [HttpGet]
+    public async Task<IActionResult> LogOut()
+    {
+        var refreshToken = Request.Cookies["RefreshToken"];
+
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            Response.Cookies.Delete("JwtToken");
+
+            TempData["success"] = "Hesabınızdan başarıyla çıkış yapıldı.";
+            return Redirect("/Auth/Login");
+
+        }
+
+        var result = await _authService.RevokeTokenAsync(refreshToken);
+
+        if (result.IsSuccess)
+        {
+            Response.Cookies.Delete("JwtToken");
+            Response.Cookies.Delete("RefreshToken");
+
+            TempData["success"] = result.Message;
+            return Redirect("/Auth/Login");
+        }
+
+        TempData["error"] = result.Message;
+        return Redirect("/");
+    }
+
 }
