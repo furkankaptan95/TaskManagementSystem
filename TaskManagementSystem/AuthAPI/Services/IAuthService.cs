@@ -4,6 +4,7 @@ namespace AuthAPI.Services;
 public interface IAuthService
 {
     Task<RegistrationResult> RegisterAsync(RegisterDto dto);
+    Task<RegistrationResult> CreateUserAsync(RegisterDto dto);
     Task<ServiceResult<TokensDto>> LoginAsync(LoginDto dto);
     Task<ServiceResult<TokensDto>> RefreshTokenAsync(string token);
     Task<ServiceResult> VerifyEmailAsync(VerifyEmailDto dto);

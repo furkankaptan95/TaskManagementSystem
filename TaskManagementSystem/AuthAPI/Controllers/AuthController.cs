@@ -27,6 +27,19 @@ public class AuthController : ControllerBase
         return Ok(result.Message);
     }
 
+    [HttpPost("create-user")]
+    public async Task<IActionResult> CreateUser([FromBody] RegisterDto dto)
+    {
+        var result = await _authService.CreateUserAsync(dto);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Message);
+        }
+
+        return Ok(result.Message);
+    }
+
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
