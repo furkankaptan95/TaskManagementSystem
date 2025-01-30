@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using UserAPI.DTOs;
+using UserAPI.Helpers;
 using UserAPI.Services;
 
 namespace UserAPI.Controllers;
@@ -11,9 +12,12 @@ namespace UserAPI.Controllers;
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
-    public UserController(IUserService userService)
+    private readonly RabbitMQProducer _rabbitMQProducer;
+
+    public UserController(IUserService userService, RabbitMQProducer rabbitMQProducer)
     {
         _userService = userService;
+        _rabbitMQProducer = rabbitMQProducer;
     }
 
     [Authorize(Roles ="Admin")]
@@ -60,6 +64,7 @@ public class UserController : ControllerBase
             return NotFound(result.Message);
         }
 
+        _rabbitMQProducer.SendMessage(dto,"UpdateUser");
         return Ok(result.Message);
     }
 
