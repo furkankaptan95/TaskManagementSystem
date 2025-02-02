@@ -85,6 +85,8 @@ public class UserController : ControllerBase
             return NotFound(result.Message);
         }
 
+        _rabbitMQProducer.SendMessage(dto, "UpdateUserRole"); 
+
         return Ok(result.Message);
     }
 
@@ -103,6 +105,8 @@ public class UserController : ControllerBase
         {
             return NotFound(result.Message);
         }
+
+        _rabbitMQProducer.SendMessage(userId, "DeleteUser");
 
         return Ok(result.Message);
     }

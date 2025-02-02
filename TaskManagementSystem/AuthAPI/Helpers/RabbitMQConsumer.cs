@@ -3,53 +3,59 @@ using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using AuthAPI.DTOs;
+using AuthAPI.Services;
 
 namespace AuthAPI.Helpers;
 
-public class RabbitMQConsumer
+public class RabbitMQConsumer : BackgroundService
 {
     private readonly RabbitMQConnectionHelper _rabbitMQConnectionHelper;
+    private readonly IAuthEventHandler _authEventHandler;
+    private IModel _channel;
 
-    public RabbitMQConsumer(RabbitMQConnectionHelper rabbitMQConnectionHelper)
+    public RabbitMQConsumer(RabbitMQConnectionHelper rabbitMQConnectionHelper, IAuthEventHandler authEventHandler)
     {
         _rabbitMQConnectionHelper = rabbitMQConnectionHelper;
+        _authEventHandler = authEventHandler;
     }
 
-    public void StartConsuming()
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Task.Run(() =>
+        var connection = _rabbitMQConnectionHelper.GetChannel();
+        _channel = connection;
+
+        _channel.QueueDeclare(
+            queue: "general_queue",
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            arguments: null
+        );
+
+        var consumer = new EventingBasicConsumer(_channel);
+        consumer.Received += (model, ea) =>
         {
-            using var channel = _rabbitMQConnectionHelper.GetChannel();
+            var body = ea.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
 
-            // Kuyruğun varlığını garanti altına al
-            channel.QueueDeclare(
-                queue: "general_queue",
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null
-            );
+            Console.WriteLine($"[*] Message received: {message}");
 
-            var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += (model, ea) =>
+            try
             {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-
-                // Newtonsoft.Json kullanarak deserialization işlemi
                 var receivedMessage = JsonConvert.DeserializeObject<RabbitMQMessage>(message);
-                
                 ProcessMessage(receivedMessage);
-            };
+                _channel.BasicAck(ea.DeliveryTag, false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[!] Error processing message: {ex.Message}");
+                _channel.BasicNack(ea.DeliveryTag, false, true);
+            }
+        };
 
-            channel.BasicConsume(
-                queue: "general_queue",
-                autoAck: true,
-                consumer: consumer
-            );
+        _channel.BasicConsume(queue: "general_queue", autoAck: false, consumer: consumer);
 
-            while (true) { Task.Delay(1000).Wait(); }
-        });
+        return Task.CompletedTask;
     }
 
     private void ProcessMessage(RabbitMQMessage message)
@@ -58,13 +64,29 @@ public class RabbitMQConsumer
         {
             case "UpdateUser":
                 var updateUserDto = JsonConvert.DeserializeObject<UpdateUserDto>(message.Data.ToString());
-                
-                // authRepository.UpdateUser(updateUserDto);
+                _authEventHandler.HandleUserUpdateAsync(updateUserDto);
+                break;
+
+            case "UpdateUserRole":
+                var updateUserRoleDto = JsonConvert.DeserializeObject<UpdateRoleDto>(message.Data.ToString());
+
+                _authEventHandler.HandleUserRoleUpdateAsync(updateUserRoleDto);
+                break;
+
+            case "DeleteUser":
+                var userId = message.Data.ToString();
+                _authEventHandler.HandleDeleteUserAsync(userId);
                 break;
 
             default:
-                Console.WriteLine($"[!] Unknown queue message received: ");
+                Console.WriteLine($"[!] Unknown queue message received: {message.OperationType}");
                 break;
         }
+    }
+
+    public override Task StopAsync(CancellationToken cancellationToken)
+    {
+        _channel?.Close();
+        return base.StopAsync(cancellationToken);
     }
 }
