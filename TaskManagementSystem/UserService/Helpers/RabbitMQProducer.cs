@@ -3,51 +3,40 @@ using System.Text.Json;
 using RabbitMQ.Client;
 
 namespace UserAPI.Helpers;
+
 public class RabbitMQProducer
 {
-    private readonly RabbitMQConnectionHelper _rabbitMQConnectionHelper;
+    private readonly RabbitMQConnectionHelper _connectionHelper;
 
-    public RabbitMQProducer(RabbitMQConnectionHelper rabbitMQConnectionHelper)
+    public RabbitMQProducer(RabbitMQConnectionHelper connectionHelper)
     {
-        _rabbitMQConnectionHelper = rabbitMQConnectionHelper;
+        _connectionHelper = connectionHelper;
     }
 
-    // İşlem tipi ve mesaj alır
-    public void SendMessage<T>(T message, string operationType)
+    public void SendMessage<T>(T message, string messageType)
     {
-        // Bağlantı ve kanal alma
-        var channel = _rabbitMQConnectionHelper.GetChannel();
+        var queueName = "general_queue";
 
-        // Kuyruk adı belirleme (İşlem türüne göre farklı kuyruklar)
-        string queueName = GetQueueNameByOperationType(operationType);
+        using var channel = _connectionHelper.GetChannel(); // Doğru kullanım
 
-        // Mesajı JSON formatına çevir
-        var messageBody = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+        // Mesaj özellikleri
+        var properties = channel.CreateBasicProperties();
+        properties.Persistent = true; // Mesajın disk üzerine yazılmasını sağlar
 
-        // Kuyruğa mesaj gönder
+        var messageObject = new RabbitMQMessage
+        {
+            OperationType = messageType, // İşlem türünü mesaj içine koy
+            Data = message
+        };
+
+        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(messageObject));
+
         channel.BasicPublish(
-            exchange: "",              // Default exchange
-            routingKey: queueName,     // Kuyruk adı
-            basicProperties: null,     // Ekstra özellikler
-            body: messageBody         // Mesaj gövdesi
+            exchange: "",
+            routingKey: queueName,
+            basicProperties: properties,
+            body: body
         );
 
-        Console.WriteLine($"Mesaj kuyruğa gönderildi: {JsonSerializer.Serialize(message)}");
-    }
-
-    // İşlem tipine göre kuyruk adı belirleme
-    private string GetQueueNameByOperationType(string operationType)
-    {
-        switch (operationType)
-        {
-            case "CreateUser":
-                return "user_create_queue";
-            case "UpdateUser":
-                return "user_update_queue";
-            case "DeleteUser":
-                return "user_delete_queue";
-            default:
-                throw new ArgumentException("Geçersiz işlem tipi.");
-        }
     }
 }

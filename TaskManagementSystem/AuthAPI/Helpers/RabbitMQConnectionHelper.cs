@@ -1,11 +1,12 @@
 ﻿using RabbitMQ.Client;
 
 namespace AuthAPI.Helpers;
+
 public class RabbitMQConnectionHelper
 {
     private readonly string _hostname = "localhost";
-    private readonly string _queueName = "user_update_queue";
     private IConnection _connection;
+    private readonly string _queueName = "general_queue";
 
     public RabbitMQConnectionHelper()
     {

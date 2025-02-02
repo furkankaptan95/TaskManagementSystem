@@ -65,6 +65,7 @@ public class UserController : ControllerBase
         }
 
         _rabbitMQProducer.SendMessage(dto,"UpdateUser");
+
         return Ok(result.Message);
     }
 
