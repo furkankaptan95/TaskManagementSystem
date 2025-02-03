@@ -116,7 +116,11 @@ public class AuthService : IAuthService
 
         await _mongoDbService.CreateUserAsync(userEntity);
 
-        return new RegistrationResult(true, "User created successfully", RegistrationError.None);
+        var createduser = await _mongoDbService.GetUserAsync(emailFilter);
+
+        var userId = createduser.Id.ToString();
+
+        return new RegistrationResult(true, userId, RegistrationError.None);
     }
 
     public async Task<ServiceResult<TokensDto>> LoginAsync(LoginDto dto)

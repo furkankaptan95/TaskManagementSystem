@@ -1,30 +1,27 @@
-﻿using System.Text;
-using Newtonsoft.Json;
+﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using AuthAPI.DTOs;
-using AuthAPI.Services;
+using System.Text;
+using Newtonsoft.Json;
+using UserAPI.Services;
+using UserAPI.DTOs;
 
-namespace AuthAPI.Helpers;
-
+namespace UserAPI.Helpers;
 public class RabbitMQConsumer : BackgroundService
 {
     private readonly RabbitMQConnectionHelper _rabbitMQConnectionHelper;
-    private readonly IAuthEventHandler _authEventHandler;
+    private readonly IUserEventHandler _userEventHandler;
     private IModel _channel;
 
-    public RabbitMQConsumer(RabbitMQConnectionHelper rabbitMQConnectionHelper, IAuthEventHandler authEventHandler)
+    public RabbitMQConsumer(RabbitMQConnectionHelper rabbitMQConnectionHelper, IUserEventHandler userEventHandler)
     {
         _rabbitMQConnectionHelper = rabbitMQConnectionHelper;
-        _authEventHandler = authEventHandler;
+        _userEventHandler = userEventHandler;
         _channel = _rabbitMQConnectionHelper.GetChannel();
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        ListenQueue("user_update_queue", stoppingToken); 
-        ListenQueue("user_role_update_queue", stoppingToken); 
-        ListenQueue("user_delete_queue", stoppingToken);
+        ListenQueue("user_create_queue", stoppingToken);
 
         return Task.CompletedTask;
     }
@@ -61,20 +58,9 @@ public class RabbitMQConsumer : BackgroundService
     {
         switch (queueName)
         {
-            case "user_update_queue":
-                var updateUserDto = JsonConvert.DeserializeObject<UpdateUserDto>(message);
-                _authEventHandler.HandleUserUpdateAsync(updateUserDto);
-                break;
-
-            case "user_role_update_queue":
-                var updateUserRoleDto = JsonConvert.DeserializeObject<UpdateRoleDto>(message);
-
-                _authEventHandler.HandleUserRoleUpdateAsync(updateUserRoleDto);
-                break;
-
-            case "user_delete_queue":
-                var userId = JsonConvert.DeserializeObject<string>(message);
-                _authEventHandler.HandleDeleteUserAsync(userId);
+            case "user_create_queue":
+                var newUserDto = JsonConvert.DeserializeObject<RabbitMQUserCreatedDto>(message);
+                _userEventHandler.HandleCreateUserAsync(newUserDto);
                 break;
 
             default:

@@ -1,4 +1,5 @@
 ﻿using AuthAPI.DTOs;
+using AuthAPI.Helpers;
 using AuthAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,10 +9,12 @@ namespace AuthAPI.Controllers;
 [ApiController]
 public class AuthController : ControllerBase
 {
-    private readonly IAuthService _authService;
-    public AuthController(IAuthService authService)
+    private readonly IAuthService _authService; 
+    private readonly RabbitMQProducer _rabbitMQProducer;
+    public AuthController(IAuthService authService, RabbitMQProducer rabbitMQProducer)
     {
         _authService = authService;
+        _rabbitMQProducer = rabbitMQProducer;
     }
 
     [HttpPost("register")]
@@ -37,7 +40,18 @@ public class AuthController : ControllerBase
             return BadRequest(result.Message);
         }
 
-        return Ok(result.Message);
+        var userDto = new RabbitMQUserCreatedDto
+        {
+            Email = dto.Email,
+            Firstname = dto.Firstname,
+            Lastname = dto.Lastname,
+            Username = dto.Username,
+            Id = result.Message,
+        };
+
+        _rabbitMQProducer.SendMessage(userDto, "user_create_queue");
+
+        return Ok("User created successfully.");
     }
 
     [HttpPost("login")]

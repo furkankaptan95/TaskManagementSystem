@@ -2,7 +2,7 @@
 using System.Text.Json;
 using RabbitMQ.Client;
 
-namespace UserAPI.Helpers;
+namespace AuthAPI.Helpers;
 
 public class RabbitMQProducer
 {

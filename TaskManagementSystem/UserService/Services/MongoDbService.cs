@@ -15,7 +15,10 @@ public class MongoDbService
     }
 
     public IMongoCollection<UserEntity> Users => _usersCollection;
-
+    public async Task CreateUserAsync(UserEntity user)
+    {
+        await _usersCollection.InsertOneAsync(user);
+    }
     public async Task<List<UserEntity>> GetAllUsersAsync()
     {
         return await _usersCollection.Find(user => true).ToListAsync();
