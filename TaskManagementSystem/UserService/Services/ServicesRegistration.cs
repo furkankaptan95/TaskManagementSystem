@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using UserAPI.Helpers;
 
 namespace UserAPI.Services;
 public static class ServicesRegistration
@@ -11,6 +12,10 @@ public static class ServicesRegistration
 
         // MongoDbService servisini ekliyoruz
         services.AddSingleton<MongoDbService>();
+        services.AddSingleton<IUserEventHandler, UserEventHandler>();
+        services.AddSingleton<RabbitMQConnectionHelper>();
+        services.AddSingleton<RabbitMQProducer>();
+        services.AddHostedService<RabbitMQConsumer>();
         AddJwtAuth(services, configuration);
         // UserService'i ekliyoruz
         services.AddScoped<IUserService, UserService>();

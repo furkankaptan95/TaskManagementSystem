@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TaskAPI.Helpers;
 
 namespace TaskAPI.Services;
 public static class ServicesRegistration
@@ -12,8 +13,10 @@ public static class ServicesRegistration
         // MongoDbService servisini ekliyoruz
         services.AddSingleton<MongoDbService>(); 
         AddJwtAuth(services, configuration);
+        services.AddSingleton<ITaskEventHandler, TaskEventHandler>();
         services.AddScoped<ITaskService, TaskService>();
-
+        services.AddSingleton<RabbitMQConnectionHelper>();
+        services.AddHostedService<RabbitMQConsumer>();
         services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         services.AddEndpointsApiExplorer();

@@ -101,5 +101,9 @@ public class MongoDbService
     {
         await _userVerificationsCollection.DeleteOneAsync(filter);
     }
+    public async Task DeleteUserAsync(FilterDefinition<UserEntity> filter)
+    {
+        await _usersCollection.DeleteOneAsync(filter);
+    }
 }
 

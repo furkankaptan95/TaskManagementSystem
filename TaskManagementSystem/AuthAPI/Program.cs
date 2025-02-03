@@ -1,3 +1,4 @@
+using AuthAPI.Helpers;
 using AuthAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,10 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 // MongoDbService servisini ekliyoruz
 builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<IAuthEventHandler, AuthEventHandler>();
+builder.Services.AddSingleton<RabbitMQConnectionHelper>();
+builder.Services.AddSingleton<RabbitMQProducer>();
+builder.Services.AddHostedService<RabbitMQConsumer>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 

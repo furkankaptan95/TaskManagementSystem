@@ -25,7 +25,14 @@ public class MongoDbService
     public IMongoCollection<TaskEntity> Tasks => _tasksCollection;
     public IMongoCollection<UserEntity> Users => _usersCollection;
     public IMongoCollection<QuestionEntity> Questions => _questionsCollection;
-
+    public async Task CreateUserAsync(UserEntity user)
+    {
+        await _usersCollection.InsertOneAsync(user);
+    }
+    public async Task DeleteUserAsync(FilterDefinition<UserEntity> filter)
+    {
+        await _usersCollection.DeleteOneAsync(filter);
+    }
     public async Task CreateTaskAsync(TaskEntity task)
     {
         await _tasksCollection.InsertOneAsync(task);
