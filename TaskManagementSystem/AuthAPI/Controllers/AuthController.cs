@@ -49,7 +49,8 @@ public class AuthController : ControllerBase
             Id = result.Message,
         };
 
-        _rabbitMQProducer.SendMessage(userDto, "user_create_queue");
+        _rabbitMQProducer.SendMessage(userDto, "user_create_queue_userapi");
+        _rabbitMQProducer.SendMessage(userDto, "user_create_queue_taskapi");
 
         return Ok("User created successfully.");
     }

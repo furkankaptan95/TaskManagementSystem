@@ -21,7 +21,7 @@ public class RabbitMQConsumer : BackgroundService
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        ListenQueue("user_create_queue", stoppingToken);
+        ListenQueue("user_create_queue_userapi", stoppingToken);
 
         return Task.CompletedTask;
     }
@@ -58,7 +58,7 @@ public class RabbitMQConsumer : BackgroundService
     {
         switch (queueName)
         {
-            case "user_create_queue":
+            case "user_create_queue_userapi":
                 var newUserDto = JsonConvert.DeserializeObject<RabbitMQUserCreatedDto>(message);
                 _userEventHandler.HandleCreateUserAsync(newUserDto);
                 break;

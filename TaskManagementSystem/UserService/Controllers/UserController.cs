@@ -106,7 +106,8 @@ public class UserController : ControllerBase
             return NotFound(result.Message);
         }
 
-        _rabbitMQProducer.SendMessage(userId, "user_delete_queue");
+        _rabbitMQProducer.SendMessage(userId, "user_delete_queue_taskapi");
+        _rabbitMQProducer.SendMessage(userId, "user_delete_queue_authapi");
 
         return Ok(result.Message);
     }

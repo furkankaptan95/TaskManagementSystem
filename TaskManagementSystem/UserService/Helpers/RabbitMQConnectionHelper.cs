@@ -33,8 +33,9 @@ public class RabbitMQConnectionHelper
         // Kuyruğu sadece bir kez tanımla
         _channel.QueueDeclare(queue: "user_update_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
         _channel.QueueDeclare(queue: "user_role_update_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
-        _channel.QueueDeclare(queue: "user_delete_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
-        _channel.QueueDeclare(queue: "user_create_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
+        _channel.QueueDeclare(queue: "user_delete_queue_taskapi", durable: true, exclusive: false, autoDelete: false, arguments: null);
+        _channel.QueueDeclare(queue: "user_delete_queue_userapi", durable: true, exclusive: false, autoDelete: false, arguments: null);
+        _channel.QueueDeclare(queue: "user_create_queue_userapi", durable: true, exclusive: false, autoDelete: false, arguments: null);
         _channel.QueueDeclare(queue: "general_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
     }
 

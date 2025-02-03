@@ -1,7 +1,6 @@
 ﻿using RabbitMQ.Client;
 
-namespace AuthAPI.Helpers;
-
+namespace TaskAPI.Helpers;
 public class RabbitMQConnectionHelper
 {
     private readonly string _hostname = "localhost";
@@ -31,10 +30,8 @@ public class RabbitMQConnectionHelper
         _channel = _connection.CreateModel();
 
         // Kuyruğu sadece bir kez tanımla
-        _channel.QueueDeclare(queue: "user_update_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
-        _channel.QueueDeclare(queue: "user_role_update_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
-        _channel.QueueDeclare(queue: "user_delete_queue_authapi", durable: true, exclusive: false, autoDelete: false, arguments: null);
-        _channel.QueueDeclare(queue: "user_create_queue_userapi", durable: true, exclusive: false, autoDelete: false, arguments: null);
+
+        _channel.QueueDeclare(queue: "user_delete_queue_taskapi", durable: true, exclusive: false, autoDelete: false, arguments: null);
         _channel.QueueDeclare(queue: "user_create_queue_taskapi", durable: true, exclusive: false, autoDelete: false, arguments: null);
         _channel.QueueDeclare(queue: "general_queue", durable: true, exclusive: false, autoDelete: false, arguments: null);
     }
