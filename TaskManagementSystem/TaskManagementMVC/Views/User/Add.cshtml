@@ -135,54 +135,75 @@
     }
 </style>
 
-@* <script>
-    document.getElementById('userForm').onsubmit = function (event) {
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("userForm");
+    const fields = {
+        Username: document.getElementById("Username"),
+        Email: document.getElementById("Email"),
+        Firstname: document.getElementById("Firstname"),
+        Lastname: document.getElementById("Lastname"),
+        Password: document.getElementById("Password")
+    };
+    
+    const errors = {
+        Username: document.getElementById("usernameError"),
+        Email: document.getElementById("emailError"),
+        Firstname: document.getElementById("firstnameError"),
+        Lastname: document.getElementById("lastnameError"),
+        Password: document.getElementById("passwordError")
+    };
+
+    function validateField(field, errorElement, validationFunc) {
+        const errorMessage = validationFunc(field.value.trim());
+        if (errorMessage) {
+            errorElement.textContent = errorMessage;
+            field.classList.add("is-invalid");
+        } else {
+            errorElement.textContent = "";
+            field.classList.remove("is-invalid");
+            field.classList.add("is-valid");
+        }
+    }
+
+    function validateUsername(value) {
+        return value.length < 3 ? "Kullanıcı adı en az 3 karakter olmalıdır." : "";
+    }
+
+    function validateEmail(value) {
+        const emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+        return !emailPattern.test(value) ? "Geçerli bir e-posta adresi girin." : "";
+    }
+
+    function validateName(value) {
+        return value.length < 2 ? "Bu alan en az 2 karakter olmalıdır." : "";
+    }
+
+    function validatePassword(value) {
+        return value.length < 6 ? "Şifre en az 6 karakter olmalıdır." : "";
+    }
+
+    fields.Username.addEventListener("input", () => validateField(fields.Username, errors.Username, validateUsername));
+    fields.Email.addEventListener("input", () => validateField(fields.Email, errors.Email, validateEmail));
+    fields.Firstname.addEventListener("input", () => validateField(fields.Firstname, errors.Firstname, validateName));
+    fields.Lastname.addEventListener("input", () => validateField(fields.Lastname, errors.Lastname, validateName));
+    fields.Password.addEventListener("input", () => validateField(fields.Password, errors.Password, validatePassword));
+
+    form.addEventListener("submit", function (event) {
         let isValid = true;
 
-        // Başlık kontrolü
-        const title = document.getElementById('Title').value;
-        const titleError = document.getElementById('titleError');
-        titleError.textContent = ""; // Hata mesajını sıfırla
-        if (!title || title.trim() === "") {
-            titleError.textContent = "Başlık zorunludur ve boş olamaz.";
-            isValid = false;
-        } else if (title.length > 50) {
-            titleError.textContent = "Başlık en fazla 50 karakter olabilir.";
-            isValid = false;
-        }
-
-        // Açıklama kontrolü
-        const description = document.getElementById('Description').value;
-        const descriptionError = document.getElementById('descriptionError');
-        descriptionError.textContent = ""; // Hata mesajını sıfırla
-        if (!description || description.trim() === "") {
-            descriptionError.textContent = "Açıklama zorunludur ve boş olamaz.";
-            isValid = false;
-        } else if (description.length > 300) {
-            descriptionError.textContent = "Açıklama en fazla 300 karakter olabilir.";
-            isValid = false;
-        }
-
-        // Bitiş Tarihi kontrolü
-        const endDate = document.getElementById('EndDate').value;
-        const endDateError = document.getElementById('endDateError');
-        endDateError.textContent = ""; // Hata mesajını sıfırla
-
-        if (!endDate) {
-            endDateError.textContent = "Bitiş tarihi zorunludur.";
-            isValid = false;
-        } else {
-            // Tarih formatı kontrolü
-            const parsedDate = Date.parse(endDate);
-            if (isNaN(parsedDate)) {
-                endDateError.textContent = "Geçerli bir tarih giriniz.";
+        Object.keys(fields).forEach(key => {
+            validateField(fields[key], errors[key], key === "Email" ? validateEmail :
+                                                      key === "Password" ? validatePassword :
+                                                      validateName);
+            if (errors[key].textContent) {
                 isValid = false;
             }
-        }
+        });
 
-        // Eğer geçersizse formu göndermeyi engelle
         if (!isValid) {
-            event.preventDefault();
+            event.preventDefault(); // Form gönderimini engelle
         }
-    };
-</script> *@
+    });
+});
+</script>

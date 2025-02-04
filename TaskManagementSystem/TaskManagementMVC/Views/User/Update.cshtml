@@ -8,7 +8,7 @@
                     <h4>Kullanıcı Detayları</h4>
                 </div>
                 <div class="card-body">
-                    <form asp-controller="User" asp-action="UpdateUser" method="post">
+                    <form asp-controller="User" asp-action="UpdateUser" method="post" id="userForm">
                         <!-- Hidden input for ID -->
                         <input type="hidden" name="Id" value="@Model.Id" />
 
@@ -25,13 +25,15 @@
                                 <tr>
                                     <th scope="row" class="text-muted">Ad:</th>
                                     <td>
-                                        <input type="text" style="color:white;" class="form-control" name="Firstname" value="@Model.Firstname" />
+                                        <input type="text" class="form-control" name="Firstname" value="@Model.Firstname" />
+                                        <span id="firstnameError" class="text-danger"></span> <!-- Error span for Firstname -->
                                     </td>
                                 </tr>
                                 <tr>
                                     <th scope="row" class="text-muted">Soyad:</th>
                                     <td>
-                                        <input type="text" style="color:white;" class="form-control" name="Lastname" value="@Model.Lastname" />
+                                        <input type="text" class="form-control" name="Lastname" value="@Model.Lastname" />
+                                        <span id="lastnameError" class="text-danger"></span> <!-- Error span for Lastname -->
                                     </td>
                                 </tr>
                                 <tr>
@@ -80,4 +82,95 @@
     .btn-sm {
         margin-right: 5px;
     }
+
+    .is-invalid {
+        border: 2px solid red;
+        background-color: #ffe6e6;
+    }
+
+    .is-valid {
+        border: 2px solid green;
+        background-color: #e6ffe6;
+    }
+
+    .text-danger {
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
 </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("userForm");
+        const fields = {
+            Firstname: document.querySelector("input[name='Firstname']"),
+            Lastname: document.querySelector("input[name='Lastname']")
+        };
+
+        // Hata mesajını ve stilini ekleyen/metodu
+        function showError(field, message) {
+            const errorElementId = field.name.toLowerCase() + "Error";
+            let errorElement = document.getElementById(errorElementId);
+
+            if (!errorElement) {
+                errorElement = document.createElement("span");
+                errorElement.id = errorElementId;
+                errorElement.classList.add("text-danger");
+                field.parentNode.appendChild(errorElement);
+            }
+
+            errorElement.textContent = message;
+            field.classList.add("is-invalid");
+            field.classList.remove("is-valid");
+        }
+
+        // Hata mesajını kaldıran/metodu
+        function clearError(field) {
+            const errorElementId = field.name.toLowerCase() + "Error";
+            const errorElement = document.getElementById(errorElementId);
+
+            if (errorElement) {
+                errorElement.textContent = "";
+                field.classList.add("is-valid");
+                field.classList.remove("is-invalid");
+            }
+        }
+
+        // Alanın doğrulama işlemini yapan metod
+        function validateField(field) {
+            let isValid = true; // Başlangıçta geçerli olarak kabul et
+
+            if (field.value.trim().length < 2) {
+                showError(field, "Bu alan en az 2 karakter olmalıdır.");
+                isValid = false; // Hata varsa geçersiz
+            } else {
+                clearError(field);
+            }
+
+            return isValid;
+        }
+
+        // Alanların input eventi için dinleyici ekleme
+        fields.Firstname.addEventListener("input", () => validateField(fields.Firstname));
+        fields.Lastname.addEventListener("input", () => validateField(fields.Lastname));
+
+        // Form submit işlemi
+        form.addEventListener("submit", function (event) {
+            let isValid = true;
+
+            // Alanları kontrol et
+            Object.values(fields).forEach(field => {
+                const fieldIsValid = validateField(field);
+                if (!fieldIsValid) {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault(); // Form gönderimini engelle
+            }
+        });
+    });
+</script>
+
+

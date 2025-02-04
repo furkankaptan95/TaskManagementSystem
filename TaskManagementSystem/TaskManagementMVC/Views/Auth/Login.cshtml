@@ -89,22 +89,23 @@
                         </div>
 
                         <!-- Form Start -->
-                        <form asp-action="Login" asp-controller="Auth" method="post">
+                        <form asp-action="Login" asp-controller="Auth" method="post" id="login-form">
                             <div class="form-floating mb-3">
                                 <input asp-for="Email" class="form-control" id="floatingInput" placeholder="name@example.com" />
                                 <label for="floatingInput">Email Adresi</label>
-                                <span asp-validation-for="Email" class="text-danger"></span>
+                                <span class="text-danger" id="emailError"></span>
                             </div>
                             <div class="form-floating mb-4">
                                 <input asp-for="Password" type="password" class="form-control" id="floatingPassword" placeholder="Password" />
                                 <label for="floatingPassword">Şifre</label>
-                                <span asp-validation-for="Password" class="text-danger"></span>
+                                <span class="text-danger" id="passwordError"></span>
                             </div>
                             <div class="d-flex align-items-center justify-content-between mb-4">
                                 <a href="/Auth/ForgotPassword">Şifrenizi mi unuttunuz?</a>
                             </div>
                             <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Giriş Yap</button>
                         </form>
+
                         <!-- Form End -->
 
                     </div>
@@ -159,25 +160,81 @@
         border-radius: 5px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
+    /* Success and error styling for the form */
+    .is-valid {
+        border-color: green;
+    }
+
+    .is-invalid {
+        border-color: red;
+    }
+
+    .text-danger {
+        font-size: 0.875em;
+        color: red;
+    }
+
+    .text-success {
+        font-size: 0.875em;
+        color: green;
+    }
+
 </style>
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("login-form");
+    const fields = {
+        Email: document.getElementById("floatingInput"),
+        Password: document.getElementById("floatingPassword")
+    };
+    
+    const errors = {
+        Email: document.getElementById("emailError"),
+        Password: document.getElementById("passwordError")
+    };
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // Hem success hem de error alert'lerini seç
-        var alerts = document.querySelectorAll('.custom-alert-success, .custom-alert-error');
+    function validateField(field, errorElement, validationFunc) {
+        const errorMessage = validationFunc(field.value.trim());
+        if (errorMessage) {
+            errorElement.textContent = errorMessage;
+            field.classList.add("is-invalid");
+        } else {
+            errorElement.textContent = "";
+            field.classList.remove("is-invalid");
+            field.classList.add("is-valid");
+        }
+    }
 
-        alerts.forEach(function (alert) {
-            if (alert) {
-                setTimeout(function () {
-                    alert.style.transition = 'opacity 0.5s ease';
-                    alert.style.opacity = '0';
-                    setTimeout(function () {
-                        alert.remove();
-                    }, 500); // Görsel olarak kaybolduktan sonra tamamen kaldır
-                }, 5000); // 5 saniye sonra kaybolmaya başla
+    function validateEmail(value) {
+        const emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+        return !emailPattern.test(value) ? "Geçerli bir e-posta adresi girin." : "";
+    }
+
+    function validatePassword(value) {
+        return value.length < 6 ? "Şifre en az 6 karakter olmalıdır." : "";
+    }
+
+    fields.Email.addEventListener("input", () => validateField(fields.Email, errors.Email, validateEmail));
+    fields.Password.addEventListener("input", () => validateField(fields.Password, errors.Password, validatePassword));
+
+    form.addEventListener("submit", function (event) {
+        let isValid = true;
+
+        // Her bir alanı doğrula
+        Object.keys(fields).forEach(key => {
+            validateField(fields[key], errors[key], key === "Email" ? validateEmail : validatePassword);
+            if (errors[key].textContent) {
+                isValid = false;
             }
         });
-    });
 
+        // Eğer hatalı varsa form gönderilmesini engelle
+        if (!isValid) {
+            event.preventDefault(); // Form gönderimini engelle
+        }
+    });
+});
 </script>
+
+

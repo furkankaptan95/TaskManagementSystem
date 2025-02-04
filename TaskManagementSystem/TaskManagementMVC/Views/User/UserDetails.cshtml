@@ -123,20 +123,79 @@
         border-radius: 5px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
+
+    .is-invalid {
+        border: 2px solid red;
+        background-color: #ffe6e6;
+    }
+
+    .is-valid {
+        border: 2px solid green;
+        background-color: #e6ffe6;
+    }
+
+    .text-danger {
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+
 </style>
 
 <script>
-    document.getElementById('changeRoleBtn').addEventListener('click', function (e) {
-        e.preventDefault();
-        document.getElementById('roleDisplay').classList.add('d-none');
-        document.getElementById('changeRoleBtn').classList.add('d-none');
-        document.getElementById('changeRoleForm').classList.remove('d-none');
-    });
+    document.addEventListener("DOMContentLoaded", function () {
+        const roleInput = document.querySelector("input[name='Role']");
+        const form = document.getElementById("changeRoleForm");
+        const changeRoleBtn = document.getElementById("changeRoleBtn");
+        const cancelChangeRole = document.getElementById("cancelChangeRole");
+        const roleDisplay = document.getElementById("roleDisplay");
 
-    document.getElementById('cancelChangeRole').addEventListener('click', function (e) {
-        e.preventDefault();
-        document.getElementById('roleDisplay').classList.remove('d-none');
-        document.getElementById('changeRoleBtn').classList.remove('d-none');
-        document.getElementById('changeRoleForm').classList.add('d-none');
+        // Role değiştirme formunu açma
+        changeRoleBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            roleDisplay.classList.add("d-none");
+            changeRoleBtn.classList.add("d-none");
+            form.classList.remove("d-none");
+        });
+
+        // Role değiştirme formunu kapatma
+        cancelChangeRole.addEventListener("click", function (e) {
+            e.preventDefault();
+            roleDisplay.classList.remove("d-none");
+            changeRoleBtn.classList.remove("d-none");
+            form.classList.add("d-none");
+        });
+
+        function validateRole() {
+            let errorElement = document.getElementById("roleError");
+
+            if (!errorElement) {
+                errorElement = document.createElement("span");
+                errorElement.id = "roleError";
+                errorElement.classList.add("text-danger");
+                roleInput.parentNode.appendChild(errorElement);
+            }
+
+            if (roleInput.value.trim().length < 3) {
+                errorElement.textContent = "Rol en az 3 karakter olmalıdır.";
+                roleInput.classList.add("is-invalid");
+                roleInput.classList.remove("is-valid");
+            } else {
+                errorElement.textContent = "";
+                roleInput.classList.add("is-valid");
+                roleInput.classList.remove("is-invalid");
+            }
+        }
+
+        // Kullanıcı input yazarken doğrulama yap
+        roleInput.addEventListener("input", validateRole);
+
+        // Form gönderilmeden önce doğrulama yap
+        form.addEventListener("submit", function (event) {
+            validateRole();
+            if (roleInput.classList.contains("is-invalid")) {
+                event.preventDefault(); // Hatalıysa formu göndermeyi engelle
+            }
+        });
     });
 </script>
+

@@ -6,28 +6,35 @@
 
 <h2 class="mt-5">@ViewData["Title"]</h2>
 
-<form asp-controller="Task" asp-action="UpdateTask" method="post" class="update-form">
-    <div class="form-group">
+<form asp-controller="Task" asp-action="UpdateTask" method="post" class="update-form" id="updateTaskForm">
+    <!-- Task Başlığı -->
+    <div class="form-group mb-3">
         <label for="Title">Başlık</label>
-        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />
+        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" />
+        <span class="text-danger" id="titleError"></span>
     </div>
 
-    <div class="form-group">
+    <!-- Task Açıklaması -->
+    <div class="form-group mb-3">
         <label for="Description">Açıklama</label>
-        <textarea class="form-control" id="Description" name="Description" rows="4" required>@Model.Description</textarea>
+        <textarea class="form-control" id="Description" name="Description" rows="4">@Model.Description</textarea>
+        <span class="text-danger" id="descriptionError"></span>
     </div>
 
-    <div class="form-group">
+    <!-- Bitiş Tarihi -->
+    <div class="form-group mb-3">
         <label for="EndDate">Bitiş Tarihi</label>
-        <input type="date" class="form-control" id="EndDate" name="EndDate" value="@Model.EndDate.ToString("yyyy-MM-dd")" required />
+        <input type="date" class="form-control" id="EndDate" name="EndDate" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+        <span class="text-danger" id="endDateError"></span>
     </div>
 
+    <!-- Gizli Id -->
     <input type="hidden" name="Id" value="@Model.Id" />
 
+    <!-- Butonlar -->
     <button type="submit" class="btn btn-success mt-3 submit-btn">Güncelle</button>
     <a href="/task-details/@Model.Id" class="btn btn-secondary mt-3 cancel-btn">İptal</a>
 </form>
-
 <style>
     /* Genel stil - Siyah ve gri tonları */
     body {
@@ -141,4 +148,134 @@
             font-size: 14px;
         }
     }
+
+    .is-valid {
+        border: 2px solid #28a745 !important;
+        background-color: #e9fbe9 !important;
+        color: #155724 !important;
+        box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+    }
+
+    /* Hatalı girişler için (kırmızı çerçeve ve arkaplan) */
+    .is-invalid {
+        border: 2px solid #dc3545 !important;
+        background-color: #fde8e8 !important;
+        color: #721c24 !important;
+        box-shadow: 0 0 5px rgba(220, 53, 69, 0.5);
+    }
+
+    /* Hata mesajlarını belirgin yap */
+    .text-danger {
+        font-size: 0.9rem;
+        font-weight: bold;
+        color: #dc3545 !important;
+        margin-top: 5px;
+    }
+
+    /* Inputlara yumuşak geçiş efekti */
+    input, textarea {
+        transition: all 0.3s ease-in-out;
+    }
 </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("updateTaskForm");
+        const fields = {
+            Title: document.querySelector("input[name='Title']"),
+            Description: document.querySelector("textarea[name='Description']"),
+            EndDate: document.querySelector("input[name='EndDate']")
+        };
+
+        // Hata mesajını ve stilini ekleyen/metodu
+        function showError(field, message) {
+            const errorElementId = field.name.toLowerCase() + "Error";
+            let errorElement = document.getElementById(errorElementId);
+
+            if (!errorElement) {
+                errorElement = document.createElement("span");
+                errorElement.id = errorElementId;
+                errorElement.classList.add("text-danger");
+                field.parentNode.appendChild(errorElement);
+            }
+
+            errorElement.textContent = message;
+            field.classList.add("is-invalid");
+            field.classList.remove("is-valid");
+        }
+
+        // Hata mesajını kaldıran/metodu
+        function clearError(field) {
+            const errorElementId = field.name.toLowerCase() + "Error";
+            const errorElement = document.getElementById(errorElementId);
+
+            if (errorElement) {
+                errorElement.textContent = "";
+                field.classList.add("is-valid");
+                field.classList.remove("is-invalid");
+            }
+        }
+
+        // Alanın doğrulama işlemini yapan metod
+        function validateField(field) {
+            let isValid = true;
+
+            if (field === fields.Title) {
+                const title = field.value.trim();
+                if (title.length === 0) {
+                    showError(field, "Başlık zorunludur.");
+                    isValid = false;
+                } else if (title.length > 50) {
+                    showError(field, "Başlık en fazla 50 karakter olmalıdır.");
+                    isValid = false;
+                } else {
+                    clearError(field);
+                }
+            } else if (field === fields.Description) {
+                const description = field.value.trim();
+                if (description.length === 0) {
+                    showError(field, "Açıklama zorunludur.");
+                    isValid = false;
+                } else if (description.length > 500) {
+                    showError(field, "Açıklama en fazla 500 karakter olmalıdır.");
+                    isValid = false;
+                } else {
+                    clearError(field);
+                }
+            } else if (field === fields.EndDate) {
+                const endDate = field.value.trim();
+                if (endDate.length === 0) {
+                    showError(field, "Bitiş tarihi zorunludur.");
+                    isValid = false;
+                } else {
+                    clearError(field);
+                }
+            }
+
+            return isValid;
+        }
+
+        // Alanların input eventi için dinleyici ekleme
+        Object.values(fields).forEach(field => {
+            field.addEventListener("input", () => validateField(field));
+        });
+
+        // Form submit işlemi
+        form.addEventListener("submit", function (event) {
+            let isValid = true;
+
+            // Alanları kontrol et
+            Object.values(fields).forEach(field => {
+                const fieldIsValid = validateField(field);
+                if (!fieldIsValid) {
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                event.preventDefault(); // Form gönderimini engelle
+            }
+        });
+    });
+</script>
+
