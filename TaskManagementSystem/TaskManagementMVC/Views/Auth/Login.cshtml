@@ -101,7 +101,7 @@
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
                             <div class="d-flex align-items-center justify-content-between mb-4">
-                                <a href="/Auth/ForgotPassword">Şifrenizi mi unuttunuz?</a>
+                                <a href="/Auth/ForgotPassword" style="color:white;">Şifrenizi mi unuttunuz?</a>
                             </div>
                             <button type="submit" class="btn btn-primary py-3 w-100 mb-4">Giriş Yap</button>
                         </form>
@@ -116,16 +116,31 @@
         <!-- Sign In End -->
     </div>
 
-    <!-- JavaScript Libraries -->
+    <!-- jQuery'yi sadece bir kez ekle -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+    <!-- jQuery Validation (Eğer kullanıyorsan) -->
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- Bootstrap 5 (jQuery'ye gerek yok) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chart.js -->
     <script src="~/lib/chart/chart.min.js"></script>
+
+    <!-- Animasyonlar -->
     <script src="~/lib/easing/easing.min.js"></script>
     <script src="~/lib/waypoints/waypoints.min.js"></script>
     <script src="~/lib/owlcarousel/owl.carousel.min.js"></script>
-    <script src="~/lib/tempusdominus/js/moment.min.js"></script>
-    <script src="~/lib/tempusdominus/js/moment-timezone.min.js"></script>
+
+    <!-- Tek bir Moment.js sürümü -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.40/moment-timezone.min.js"></script>
+
+    <!-- Tempus Dominus -->
     <script src="~/lib/tempusdominus/js/tempusdominus-bootstrap-4.min.js"></script>
+
 
     <!-- Template Javascript -->
     <script src="~/js/main.js"></script>

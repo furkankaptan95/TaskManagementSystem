@@ -24,6 +24,11 @@ public class AuthController : Controller
     [HttpPost]
     public async Task<IActionResult> Login([FromForm] LoginDto loginDto)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(loginDto);
+        }
+
         var result = await _authService.LoginAsync(loginDto);
 
         if (!result.IsSuccess)
@@ -65,6 +70,11 @@ public class AuthController : Controller
     [HttpPost]
     public async Task<IActionResult> ForgotPassword([FromForm] ForgotPasswordDto dto)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(dto);
+        }
+
         var result = await _authService.ForgotPasswordAsync(dto);
         if (!result.IsSuccess)
         {

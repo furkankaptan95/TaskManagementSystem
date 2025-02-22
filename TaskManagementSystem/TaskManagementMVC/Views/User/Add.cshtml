@@ -26,33 +26,33 @@
     <form asp-controller="User" asp-action="Add" method="post" id="userForm">
 
         <div class="form-group mb-3">
-            <label for="Username">Kullanıcı Adı</label>
-            <input type="text" class="form-control" id="Username" name="Username" placeholder="Kullanıcı adı girin" />
-            <span class="text-danger" id="usernameError"></span>
+            <label asp-for="Username">Kullanıcı Adı</label>
+            <input class="form-control" asp-for="Username" placeholder="Kullanıcı adı girin" />
+            <span class="text-danger" asp-validation-for="Username"></span>
         </div>
 
         <div class="form-group mb-3">
-            <label for="Email">Email</label>
-            <input type="text" class="form-control" id="Email" name="Email" placeholder="Email girin" />
-            <span class="text-danger" id="emailError"></span>
+            <label asp-for="Email">Email</label>
+            <input class="form-control" asp-for="Email" placeholder="Email girin" />
+            <span class="text-danger" asp-validation-for="Email"></span>
         </div>
 
         <div class="form-group mb-3">
-            <label for="Firstname">İsim</label>
-            <input type="text" class="form-control" id="Firstname" name="Firstname" placeholder="İsim girin" />
-            <span class="text-danger" id="firstnameError"></span>
+            <label asp-for="Firstname">İsim</label>
+            <input class="form-control" asp-for="Firstname" placeholder="İsim girin" />
+            <span class="text-danger" asp-validation-for="Firstname"></span>
         </div>
 
         <div class="form-group mb-3">
-            <label for="Lastname">Soy İsim</label>
-            <input type="text" class="form-control" id="Lastname" name="Lastname" placeholder="Soyismi girin" />
-            <span class="text-danger" id="lastnameError"></span>
+            <label asp-for="Lastname">Soy İsim</label>
+            <input class="form-control" asp-for="Lastname" placeholder="Soyismi girin" />
+            <span class="text-danger" asp-validation-for="Lastname"></span>
         </div>
 
         <div class="form-group mb-3">
-            <label for="Password">Şifre</label>
-            <input type="text" class="form-control" id="Password" name="Password" placeholder="Şifre girin" />
-            <span class="text-danger" id="passwordError"></span>
+            <label asp-for="Password">Şifre</label>
+            <input class="form-control" asp-for="Password" placeholder="Şifre girin" />
+            <span class="text-danger" asp-validation-for="Password"></span>
         </div>
 
         <!-- Gönder Butonu -->
@@ -135,54 +135,3 @@
     }
 </style>
 
-@* <script>
-    document.getElementById('userForm').onsubmit = function (event) {
-        let isValid = true;
-
-        // Başlık kontrolü
-        const title = document.getElementById('Title').value;
-        const titleError = document.getElementById('titleError');
-        titleError.textContent = ""; // Hata mesajını sıfırla
-        if (!title || title.trim() === "") {
-            titleError.textContent = "Başlık zorunludur ve boş olamaz.";
-            isValid = false;
-        } else if (title.length > 50) {
-            titleError.textContent = "Başlık en fazla 50 karakter olabilir.";
-            isValid = false;
-        }
-
-        // Açıklama kontrolü
-        const description = document.getElementById('Description').value;
-        const descriptionError = document.getElementById('descriptionError');
-        descriptionError.textContent = ""; // Hata mesajını sıfırla
-        if (!description || description.trim() === "") {
-            descriptionError.textContent = "Açıklama zorunludur ve boş olamaz.";
-            isValid = false;
-        } else if (description.length > 300) {
-            descriptionError.textContent = "Açıklama en fazla 300 karakter olabilir.";
-            isValid = false;
-        }
-
-        // Bitiş Tarihi kontrolü
-        const endDate = document.getElementById('EndDate').value;
-        const endDateError = document.getElementById('endDateError');
-        endDateError.textContent = ""; // Hata mesajını sıfırla
-
-        if (!endDate) {
-            endDateError.textContent = "Bitiş tarihi zorunludur.";
-            isValid = false;
-        } else {
-            // Tarih formatı kontrolü
-            const parsedDate = Date.parse(endDate);
-            if (isNaN(parsedDate)) {
-                endDateError.textContent = "Geçerli bir tarih giriniz.";
-                isValid = false;
-            }
-        }
-
-        // Eğer geçersizse formu göndermeyi engelle
-        if (!isValid) {
-            event.preventDefault();
-        }
-    };
-</script> *@

@@ -26,16 +26,16 @@
     <form asp-controller="Task" asp-action="Add" method="post" id="taskForm">
         <!-- Task Başlığı -->
         <div class="form-group mb-3">
-            <label for="Title">Başlık</label>
-            <input type="text" class="form-control" id="Title" name="Title" placeholder="Görev başlığı girin" />
-            <span class="text-danger" id="titleError"></span>
+            <label asp-for="Title">Başlık</label>
+            <input class="form-control" asp-for="Title" placeholder="Görev başlığı girin" />
+            <span class="text-danger" asp-validation-for="Title"></span>
         </div>
 
         <!-- Task Açıklaması -->
         <div class="form-group mb-3">
-            <label for="Description">Açıklama</label>
-            <textarea class="form-control" id="Description" name="Description" rows="4" placeholder="Görev açıklamasını girin"></textarea>
-            <span class="text-danger" id="descriptionError"></span>
+            <label asp-for="Description">Açıklama</label>
+            <textarea class="form-control" asp-for="Description" rows="4" placeholder="Görev açıklamasını girin"></textarea>
+            <span class="text-danger" asp-validation-for="Description"></span>
         </div>
 
         <!-- Kullanıcı Seçimi -->
@@ -52,9 +52,9 @@
 
         <!-- Bitiş Tarihi -->
         <div class="form-group mb-3">
-            <label for="EndDate">Bitiş Tarihi</label>
-            <input type="date" class="form-control" id="EndDate" name="EndDate" />
-            <span class="text-danger" id="endDateError"></span>
+            <label asp-for="EndDate">Bitiş Tarihi</label>
+            <input type="date" class="form-control" asp-for="EndDate" />
+            <span class="text-danger" asp-validation-for="EndDate"></span>
         </div>
 
         <!-- Gönder Butonu -->
@@ -136,55 +136,3 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 </style>
-
-<script>
-    document.getElementById('taskForm').onsubmit = function (event) {
-        let isValid = true;
-
-        // Başlık kontrolü
-        const title = document.getElementById('Title').value;
-        const titleError = document.getElementById('titleError');
-        titleError.textContent = ""; // Hata mesajını sıfırla
-        if (!title || title.trim() === "") {
-            titleError.textContent = "Başlık zorunludur ve boş olamaz.";
-            isValid = false;
-        } else if (title.length > 50) {
-            titleError.textContent = "Başlık en fazla 50 karakter olabilir.";
-            isValid = false;
-        }
-
-        // Açıklama kontrolü
-        const description = document.getElementById('Description').value;
-        const descriptionError = document.getElementById('descriptionError');
-        descriptionError.textContent = ""; // Hata mesajını sıfırla
-        if (!description || description.trim() === "") {
-            descriptionError.textContent = "Açıklama zorunludur ve boş olamaz.";
-            isValid = false;
-        } else if (description.length > 300) {
-            descriptionError.textContent = "Açıklama en fazla 300 karakter olabilir.";
-            isValid = false;
-        }
-
-        // Bitiş Tarihi kontrolü
-        const endDate = document.getElementById('EndDate').value;
-        const endDateError = document.getElementById('endDateError');
-        endDateError.textContent = ""; // Hata mesajını sıfırla
-
-        if (!endDate) {
-            endDateError.textContent = "Bitiş tarihi zorunludur.";
-            isValid = false;
-        } else {
-            // Tarih formatı kontrolü
-            const parsedDate = Date.parse(endDate);
-            if (isNaN(parsedDate)) {
-                endDateError.textContent = "Geçerli bir tarih giriniz.";
-                isValid = false;
-            }
-        }
-
-        // Eğer geçersizse formu göndermeyi engelle
-        if (!isValid) {
-            event.preventDefault();
-        }
-    };
-</script>
