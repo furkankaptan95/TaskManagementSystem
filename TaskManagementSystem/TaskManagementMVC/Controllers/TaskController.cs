@@ -144,6 +144,15 @@ public class TaskController : Controller
     [HttpPost]
     public async Task<IActionResult> AddQuestion([FromBody] AddQuestionDto model)
     {
+        if (!ModelState.IsValid)
+        {
+            var errorMessage = string.Join("\n", ModelState.Values
+           .SelectMany(v => v.Errors)
+           .Select(e => e.ErrorMessage));
+
+            return BadRequest(new { errorMessage });
+        }
+
         var result = await _taskService.AddQuestionAsync(model);
 
         if (!result.IsSuccess)
@@ -158,6 +167,15 @@ public class TaskController : Controller
     [HttpPost]
     public async Task<IActionResult> ReplyQuestion([FromBody] ReplyQuestionDto model)
     {
+        if (!ModelState.IsValid)
+        {
+            var errorMessage = string.Join("\n", ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Select(e => e.ErrorMessage));
+
+            return BadRequest(new { errorMessage });
+        }
+
         var result = await _taskService.ReplyQuestionAsync(model);
 
         if (!result.IsSuccess)
@@ -265,6 +283,11 @@ public class TaskController : Controller
     [HttpPost]
     public async Task<IActionResult> UpdateTask([FromForm] UpdateTaskDto model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
         var result = await _taskService.UpdateTaskAsync(model);
 
         if (!result.IsSuccess)

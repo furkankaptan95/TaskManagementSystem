@@ -39,6 +39,11 @@ public class UserController : Controller
     [HttpPost]
     public async Task<IActionResult> Add(AddUserDto model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
         var result = await _userService.AddUserAsync(model);
 
         if (!result.IsSuccess)
@@ -103,6 +108,18 @@ public class UserController : Controller
     [HttpPost]
     public async Task<IActionResult> UpdateUser([FromForm] UpdateUserDto updateUserDto)
     {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values
+           .SelectMany(v => v.Errors)
+           .Select(e => e.ErrorMessage)
+           .ToList();
+
+            TempData["error"] = string.Join("\n", errors);
+
+            return Redirect($"/user-details/{updateUserDto.Id}");
+        }
+
         var result = await _userService.UpdateUserAsync(updateUserDto);
 
         if (!result.IsSuccess)
@@ -119,6 +136,17 @@ public class UserController : Controller
     [HttpPost]
     public async Task<IActionResult> ChangeRole([FromForm] UpdateRoleDto updateRoleDto)
     {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values
+            .SelectMany(v => v.Errors)
+            .Select(e => e.ErrorMessage)
+            .ToList();
+
+            TempData["error"] = string.Join("\n", errors);
+            return Redirect($"/user-details/{updateRoleDto.UserId}");
+        }
+
         var result = await _userService.UpdateRoleAsync(updateRoleDto);
 
         if (!result.IsSuccess)

@@ -8,18 +8,21 @@
 
 <form asp-controller="Task" asp-action="UpdateTask" method="post" class="update-form">
     <div class="form-group">
-        <label for="Title">Başlık</label>
-        <input type="text" class="form-control" id="Title" name="Title" value="@Model.Title" required />
+        <label asp-for="Title">Başlık</label>
+        <input class="form-control" asp-for="Title" value="@Model.Title" />
+        <span class="text-danger" asp-validation-for="Title"></span>
     </div>
 
     <div class="form-group">
-        <label for="Description">Açıklama</label>
-        <textarea class="form-control" id="Description" name="Description" rows="4" required>@Model.Description</textarea>
+        <label asp-for="Description">Açıklama</label>
+        <textarea class="form-control" asp-for="Description" rows="4" required>@Model.Description</textarea>
+        <span class="text-danger" asp-validation-for="Description"></span>
     </div>
 
     <div class="form-group">
-        <label for="EndDate">Bitiş Tarihi</label>
-        <input type="date" class="form-control" id="EndDate" name="EndDate" value="@Model.EndDate.ToString("yyyy-MM-dd")" required />
+        <label asp-for="EndDate">Bitiş Tarihi</label>
+        <input type="date" class="form-control" asp-for="EndDate" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+        <span class="text-danger" asp-validation-for="EndDate"></span>
     </div>
 
     <input type="hidden" name="Id" value="@Model.Id" />
